@@ -11,7 +11,17 @@ ENDIF(CMAKE_COMPILER_IS_GNUCC)
 #引入头文件
 INCLUDE_DIRECTORIES(include)
 
-set(SOURCE_FILES main.cpp include/NodeManager.h src/core/node/NodeManager.cpp include/UnixCommand.h src/core/os/UnixCommand.cpp include/IniConfig.h src/core/config/IniConfig.cpp)
+set(SOURCE_FILES
+        main.cpp
+        include/NodeManager.h
+        src/core/node/NodeManager.cpp
+        include/UnixCommand.h
+        src/core/os/UnixCommand.cpp
+        include/config/IniConfig.h
+        src/core/config/IniConfig.cpp
+        include/lock/FilePersistenceLock.h
+        src/core/lock/FilePersistenceLock.cpp
+        include/Noncopyable.h src/core/EventLoop.cpp include/EventLoop.h include/Channel.h src/core/Channel.cpp)
 #加入主要文件
 add_executable(phpLogGuard ${SOURCE_FILES})
 #CFLAGS='-g -O0'

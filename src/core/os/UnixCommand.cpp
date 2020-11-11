@@ -12,7 +12,18 @@ bool OS::UnixCommand::parse() {
     std::string cmdOptionString;
     std::string option;
 
-    for(cmdMapIterator = cmdMap.begin(); cmdMapIterator != cmdMap.end(); cmdMapIterator++) {
+    //检查argc
+    if (cmdArgC == 0) {
+        std::cerr << "Please set argc" << std::endl;
+        exit(-1);
+    }
+
+    if (!cmdArgV) {
+        std::cerr << "Please set argv" << std::endl;
+        exit(-1);
+    }
+
+    for (cmdMapIterator = cmdMap.begin(); cmdMapIterator != cmdMap.end(); cmdMapIterator++) {
         cmdOptionString.append(&cmdMapIterator->first);
     }
 
@@ -24,7 +35,7 @@ bool OS::UnixCommand::parse() {
         if (cmdMapIterator != cmdMap.end()) {
             cmdMapIterator->second(cmdArgC, cmdArgV, charOpt);
         } else {
-            std::cerr << "args" << charOpt-'0' << " not found" << std::endl;
+            std::cerr << "args" << charOpt - '0' << " not found" << std::endl;
             exit(-1);
         }
     }

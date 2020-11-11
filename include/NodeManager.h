@@ -5,39 +5,66 @@
 #ifndef LOGSENTRY_NODEMANAGER_H
 #define LOGSENTRY_NODEMANAGER_H
 
+#include <syscall.h>
+
 #include <memory>
 
 #include "UnixCommand.h"
+#include "config/IniConfig.h"
+#include "lock/FilePersistenceLock.h"
+#include "Noncopyable.h"
+
 using namespace std::placeholders;
 namespace Node {
-class NodeManager : public std::enable_shared_from_this<NodeManager> {
+class NodeManager : public std::enable_shared_from_this<NodeManager>, Noncopyable{
     public:
-        NodeManager () {
+        NodeManager() {
             command = std::make_shared<OS::UnixCommand>();
+            iniConfig = std::make_shared<Config::IniConfig>();
         }
-        bool getConfigPath(int argc, char** argv, const char &cmd) {
+
+        bool getConfigPath(int argc, char **argv, const char &cmd) {
             configPath = argv[optind];
             return true;
         }
 
-        bool setCommandArgc (int argc) {
+        bool cmdExecutor(int argc, char **argv, const char &cmd);
+
+        bool setCommandArgc(int argc) {
             command->setCmdArgC(argc);
             return true;
         }
 
-        bool setCommandArgv (char** argv) {
+        bool setCommandArgv(char **argv) {
             command->setCmdArgV(argv);
             return true;
         }
+
+        pid_t getStorageMutexPid(const std::string &pidFilePath);
+
+        pid_t setStorageMutexPid(const std::string &pidFilePath);
 
         void run();
 
         ~NodeManager() {
 
         }
+
     private:
+        //命令行解析工具
         std::shared_ptr<OS::UnixCommand> command;
+        //配置文件读取工具
+        std::shared_ptr<Config::IniConfig> iniConfig;
+        //ini文件读出后的配置
+        Config::configMapType config;
+        //管理进程的pid
+        pid_t managerPid;
+        //持久化pid进程文件锁
+        Lock::FilePersistenceLock persistLock;
         std::string configPath;
+        std::string pidFile;
+        std::string executorCmd = "start";
+        int mutexFd;
     };
 }
 
