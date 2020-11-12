@@ -21,7 +21,7 @@ set(SOURCE_FILES
         src/core/config/IniConfig.cpp
         include/lock/FilePersistenceLock.h
         src/core/lock/FilePersistenceLock.cpp
-        include/Noncopyable.h src/core/EventLoop.cpp include/EventLoop.h include/Channel.h src/core/Channel.cpp)
+        include/Noncopyable.h src/core/event/EventLoop.cpp include/EventLoop.h include/Channel.h src/core/event/Channel.cpp src/core/os/UnixThread.cpp include/os/UnixThread.h src/core/os/UnixSignalDescription.cpp include/os/UnixSignalDescription.h src/core/event/EventWakeup.cpp include/EventWakeup.h include/UnixThread.h)
 #加入主要文件
 add_executable(phpLogGuard ${SOURCE_FILES})
 #CFLAGS='-g -O0'

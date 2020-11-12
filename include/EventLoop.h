@@ -6,32 +6,44 @@
 #define PHPLOGGUARD_EVENTLOOP_H
 #include <sys/epoll.h>
 #include <unistd.h>
+#include <syscall.h>
 
 #include <iostream>
 #include <cstring>
+#include <vector>
+#include <map>
 
 #include "Noncopyable.h"
+#include "Channel.h"
 
-namespace Core {
+namespace Event {
+    typedef std::vector<struct epoll_event> EventListType;
+    typedef std::map<int, Channel*> ChannelMap;
     class EventLoop : public Noncopyable {
     public:
-        EventLoop(size_t size) {
+        EventLoop() :eventList(16) {
             eventPollFd = epoll_create1(EPOLL_CLOEXEC);
         };
 
-        bool addEvent();
+        bool set(int operation, Channel* channel);
 
-        bool stop();
+        bool stop() {
+            return quit = true;
+        }
 
         bool start();
+
+        bool updateChannel(Channel* channel);
 
         ~EventLoop() {
             ::close(eventPollFd);
         }
 
     private:
-        bool state = true;
         int eventPollFd;
+        bool quit = false;
+        EventListType eventList;
+        ChannelMap channels;
     };
 }
 

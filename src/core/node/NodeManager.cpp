@@ -3,6 +3,9 @@
 //
 
 #include "NodeManager.h"
+#include "EventLoop.h"
+#include "os/UnixSignalDescription.h"
+#include "Channel.h"
 
 bool Node::NodeManager::cmdExecutor(int argc, char **argv, const char &cmd) {
     executorCmd = argv[optind];
@@ -60,8 +63,11 @@ pid_t Node::NodeManager::setStorageMutexPid(const std::string &pidFilePath) {
         std::cerr << persistLock.getErrorMsg() << std::endl;
         exit(-1);
     }
-    sleep(100000);
     return managerPid;
+}
+
+void Node::NodeManager::onStop() {
+
 }
 
 /**
@@ -91,4 +97,39 @@ void Node::NodeManager::run() {
     }
 
     setStorageMutexPid(pidFile);
+
+    //校验工作线程数目是否是空的
+    if (configMap["sentry"]["file_sentry_thread_number"].empty()) {
+        std::cerr << "file_sentry_thread_number set error" << std::endl;
+        exit(-1);
+    }
+
+    //获取工作线程数目
+    int workerNumber = atoi(configMap["sentry"]["file_sentry_thread_number"].c_str());
+    if (workerNumber <= 0) {
+        std::cerr << "file_sentry_thread_number set error" << std::endl;
+        exit(-1);
+    }
+
+    Event::EventLoop* mainLoop = new Event::EventLoop();
+
+    //启动线程池
+    int num;
+    for (num = 0; num < workerNumber; num++) {
+
+    }
+
+    //创建信号处理器
+    OS::UnixSignalDescription signalDescription;
+    signalDescription.addMask(SIGTERM);
+    //建立信号临界区
+    signalDescription.lockProcMask();
+
+    //绑定信号处理器
+    std::shared_ptr<Event::Channel> signalChannel = std::make_shared<Event::Channel>(mainLoop,
+            signalDescription.getSignalFd());
+    //水平触发
+    signalChannel->setOnReadCallable(std::bind(&NodeManager::onStop, shared_from_this()));
+    signalChannel->enableReading();
+    mainLoop->start();
 }
