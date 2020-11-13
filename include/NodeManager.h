@@ -13,17 +13,14 @@
 #include "config/IniConfig.h"
 #include "lock/FilePersistenceLock.h"
 #include "Noncopyable.h"
+#include "os/UnixSignalDescription.h"
 #include "EventLoop.h"
-
 using namespace std::placeholders;
 namespace Node {
-class NodeManager : public std::enable_shared_from_this<NodeManager>, Noncopyable{
+
+    class NodeManager : public std::enable_shared_from_this<NodeManager>, Noncopyable {
     public:
-        NodeManager() {
-            command = std::make_shared<OS::UnixCommand>();
-            iniConfig = std::make_shared<Config::IniConfig>();
-            mainLoop = new Event::EventLoop();
-        }
+        NodeManager();
 
         bool getConfigPath(int argc, char **argv, const char &cmd) {
             configPath = argv[optind];
@@ -50,9 +47,7 @@ class NodeManager : public std::enable_shared_from_this<NodeManager>, Noncopyabl
 
         void onStop();
 
-        ~NodeManager() {
-
-        }
+        ~NodeManager();
 
     private:
         //命令行解析工具
@@ -65,6 +60,7 @@ class NodeManager : public std::enable_shared_from_this<NodeManager>, Noncopyabl
         pid_t managerPid;
         //持久化pid进程文件锁
         Lock::FilePersistenceLock persistLock;
+        std::shared_ptr<OS::UnixSignalDescription> signalDescription;
         Event::EventLoop* mainLoop;
         std::string configPath;
         std::string pidFile;

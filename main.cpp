@@ -23,4 +23,5 @@ int main(int argc, char **argv) {
     manager->setCommandArgc(argc);
     manager->setCommandArgv(argv);
     manager->run();
+    manager.reset();
 }

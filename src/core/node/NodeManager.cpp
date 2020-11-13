@@ -4,8 +4,13 @@
 
 #include "NodeManager.h"
 #include "EventLoop.h"
-#include "os/UnixSignalDescription.h"
-#include "Channel.h"
+
+Node::NodeManager::NodeManager() {
+    command = std::make_shared<OS::UnixCommand>();
+    iniConfig = std::make_shared<Config::IniConfig>();
+    mainLoop = new Event::EventLoop();
+    signalDescription = std::make_shared<OS::UnixSignalDescription>();
+}
 
 bool Node::NodeManager::cmdExecutor(int argc, char **argv, const char &cmd) {
     executorCmd = argv[optind];
@@ -120,16 +125,21 @@ void Node::NodeManager::run() {
     }
 
     //创建信号处理器
-    OS::UnixSignalDescription signalDescription;
-    signalDescription.addMask(SIGTERM);
+    signalDescription->addMask(SIGTERM);
     //建立信号临界区
-    signalDescription.lockProcMask();
+    signalDescription->lockProcMask();
 
     //绑定信号处理器
     std::shared_ptr<Event::Channel> signalChannel = std::make_shared<Event::Channel>(mainLoop,
-            signalDescription.getSignalFd());
+            signalDescription->getSignalFd());
     //水平触发
     signalChannel->setOnReadCallable(std::bind(&NodeManager::onStop, shared_from_this()));
     signalChannel->enableReading();
+
+    //加入
     mainLoop->start();
+}
+
+Node::NodeManager::~NodeManager() {
+    delete mainLoop;
 }
