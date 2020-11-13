@@ -15,6 +15,7 @@
 #include "Noncopyable.h"
 #include "os/UnixSignalDescription.h"
 #include "EventLoop.h"
+#include "UnixInodeWatcher.h"
 using namespace std::placeholders;
 namespace Node {
 

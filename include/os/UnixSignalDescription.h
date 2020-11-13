@@ -11,8 +11,10 @@
 #include <cstring>
 #include <sys/signalfd.h>
 
+#include "Noncopyable.h"
+
 namespace OS {
-    class UnixSignalDescription {
+    class UnixSignalDescription : public Noncopyable{
     public:
         UnixSignalDescription() {
 

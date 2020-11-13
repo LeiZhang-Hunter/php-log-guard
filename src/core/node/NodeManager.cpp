@@ -121,6 +121,13 @@ void Node::NodeManager::run() {
 
     pidFile = configMap["sentry"]["pid_file"];
 
+    //检查监控的文件是否正确
+    std::string path = configMap["sentry_log_file"]["php-fom.log"];
+    if (path.empty()) {
+        std::cerr << "path not empty" << std::endl;
+        exit(-1);
+    }
+
     if (executorCmd == "stop") {
         //获取程序的pid
         pid_t pid = getStorageMutexPid(pidFile);
@@ -143,8 +150,6 @@ void Node::NodeManager::run() {
         exit(-1);
     }
 
-    mainLoop = new Event::EventLoop();
-
     //启动线程池
     int num;
     for (num = 0; num < workerNumber; num++) {
@@ -162,6 +167,19 @@ void Node::NodeManager::run() {
     //水平触发
     signalChannel->setOnReadCallable(std::bind(&NodeManager::onStop, shared_from_this()));
     signalChannel->enableReading();
+
+    //加入文件监控
+    std::shared_ptr<OS::UnixInodeWatcher> watcher = std::make_shared<OS::UnixInodeWatcher>();
+
+    if (!watcher->setWatcher(path)) {
+        std::cerr << watcher->getErrorMsg() << std::endl;
+        exit(-1);
+    }
+
+    std::shared_ptr<Event::Channel> fileWatcherChannel = std::make_shared<Event::Channel>(mainLoop,
+            watcher->getINotifyId());
+    fileWatcherChannel->setOnReadCallable(std::bind(&OS::UnixInodeWatcher::watcherOnRead, watcher));
+    fileWatcherChannel->enableReading();
 
     //加入
     mainLoop->start();
