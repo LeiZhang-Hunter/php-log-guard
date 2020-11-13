@@ -78,6 +78,8 @@ namespace Event {
             return true;
         }
 
+        bool handelEvent();
+
         void update();
 
     private:

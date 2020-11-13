@@ -28,16 +28,18 @@ bool Event::EventLoop::start() {
     std::cout << syscall(SYS_gettid) << std::endl;
 
     //事件循环
+    std::cout << quit << std::endl;
     while (!quit) {
+        std::cout << quit << std::endl;
         int eventNumber = epoll_wait(eventPollFd, &*eventList.begin(),
                 static_cast<int>(eventList.size()),
                 -1);
 
-        std::cout << eventNumber << std::endl;
-
         //循环事件池，定位channel
         for(int i = 0; i < eventNumber; i++) {
-            static_cast<>(eventList[i].data.ptr);
+            Channel* channel = static_cast<Channel*>(eventList[i].data.ptr);
+            channel->setEvents(eventList[i].events);
+            channel->handelEvent();
         }
     }
 

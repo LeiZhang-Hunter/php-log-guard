@@ -34,6 +34,10 @@ namespace OS {
             return false;
         }
 
+        /**
+         * 建立信号临界区
+         * @return
+         */
         bool lockProcMask() {
             if (sigprocmask(SIG_BLOCK, &mask, &oldMask) == 0) {
                 return true;
@@ -41,6 +45,10 @@ namespace OS {
             return false;
         }
 
+        /**
+         * 取消信号临界区
+         * @return
+         */
         bool unLockProcMask() {
             if (sigprocmask(SIG_UNBLOCK, &mask, &oldMask) == 0) {
                 return true;
@@ -48,6 +56,10 @@ namespace OS {
             return false;
         }
 
+        /**
+         * 获取signalfd
+         * @return
+         */
         int getSignalFd() {
             lockProcMask();
             signalFd = signalfd(-1, &mask, SFD_NONBLOCK);
@@ -57,14 +69,25 @@ namespace OS {
             return signalFd;
         }
 
+        /**
+         * 获取最后的错误码
+         * @return
+         */
         int getErrorno() {
             return errno;
         }
 
+        /**
+         * 获取错误详细信息
+         * @return
+         */
         std::string getErrorMsg() {
             return strerror(errno);
         }
 
+        /**
+         * 析构函数关闭signalFd
+         */
         ~UnixSignalDescription() {
             if(signalFd > 0) {
                 close(signalFd);

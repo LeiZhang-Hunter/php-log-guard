@@ -67,7 +67,7 @@ pid_t Node::NodeManager::setStorageMutexPid(const std::string &pidFilePath) {
 }
 
 void Node::NodeManager::onStop() {
-
+    mainLoop->stop();
 }
 
 /**
@@ -111,7 +111,7 @@ void Node::NodeManager::run() {
         exit(-1);
     }
 
-    Event::EventLoop* mainLoop = new Event::EventLoop();
+    mainLoop = new Event::EventLoop();
 
     //启动线程池
     int num;
