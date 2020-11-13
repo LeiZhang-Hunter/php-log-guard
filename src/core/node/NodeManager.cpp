@@ -5,6 +5,13 @@
 #include "NodeManager.h"
 #include "EventLoop.h"
 
+/**
+ * 构造函数
+ * 初始化命令行管理工具
+ * 初始化配置文件管理工具
+ * 初始化事件循环
+ * 初始化信号管理器
+ */
 Node::NodeManager::NodeManager() {
     command = std::make_shared<OS::UnixCommand>();
     iniConfig = std::make_shared<Config::IniConfig>();
@@ -12,11 +19,23 @@ Node::NodeManager::NodeManager() {
     signalDescription = std::make_shared<OS::UnixSignalDescription>();
 }
 
+/**
+ * 获取用户输入的命令
+ * @param argc
+ * @param argv
+ * @param cmd
+ * @return
+ */
 bool Node::NodeManager::cmdExecutor(int argc, char **argv, const char &cmd) {
     executorCmd = argv[optind];
     return true;
 }
 
+/**
+ * 获取唯一副本的进程pid
+ * @param pidFilePath
+ * @return
+ */
 pid_t Node::NodeManager::getStorageMutexPid(const std::string &pidFilePath) {
     mutexFd = open(pidFilePath.c_str(), O_RDONLY);
     if (mutexFd == -1) {
@@ -28,6 +47,11 @@ pid_t Node::NodeManager::getStorageMutexPid(const std::string &pidFilePath) {
     return 0;
 }
 
+/**
+ * 设置唯一进程副本的pid
+ * @param pidFilePath
+ * @return
+ */
 pid_t Node::NodeManager::setStorageMutexPid(const std::string &pidFilePath) {
     mutexFd = open(pidFilePath.c_str(), O_CREAT | O_RDWR, __S_IREAD|__S_IWRITE);
     if (mutexFd == -1) {
@@ -71,6 +95,9 @@ pid_t Node::NodeManager::setStorageMutexPid(const std::string &pidFilePath) {
     return managerPid;
 }
 
+/**
+ * 接收到SIGTERM的处理函数
+ */
 void Node::NodeManager::onStop() {
     mainLoop->stop();
 }
@@ -140,6 +167,9 @@ void Node::NodeManager::run() {
     mainLoop->start();
 }
 
+/**
+ * 析构释放，删除主循环内存
+ */
 Node::NodeManager::~NodeManager() {
     delete mainLoop;
 }
