@@ -8,12 +8,10 @@
 #define DEFAULT_PATH "/etc/php-log-guard.ini"
 
 std::string test(int argc, char **argv, const char &cmd) {
-    std::cout<< argv[optind] << std::endl;
     return "a";
 }
 
 std::string test2(int argc, char **argv, const char &cmd) {
-    std::cout<< argv[optind] << std::endl;
     return "b";
 }
 using namespace std::placeholders;

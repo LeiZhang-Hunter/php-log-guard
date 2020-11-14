@@ -9,13 +9,13 @@
 
 #include <memory>
 
-#include "UnixCommand.h"
+#include "os/UnixCommand.h"
 #include "config/IniConfig.h"
 #include "lock/FilePersistenceLock.h"
 #include "Noncopyable.h"
 #include "os/UnixSignalDescription.h"
-#include "EventLoop.h"
-#include "UnixInodeWatcher.h"
+#include "event/EventLoop.h"
+#include "os/UnixInodeWatcher.h"
 using namespace std::placeholders;
 namespace Node {
 

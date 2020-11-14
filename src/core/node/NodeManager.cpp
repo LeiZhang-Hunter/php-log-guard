@@ -3,7 +3,7 @@
 //
 
 #include "NodeManager.h"
-#include "EventLoop.h"
+#include "event/EventLoop.h"
 
 /**
  * 构造函数
@@ -153,7 +153,7 @@ void Node::NodeManager::run() {
     //启动线程池
     int num;
     for (num = 0; num < workerNumber; num++) {
-
+        
     }
 
     //创建信号处理器
@@ -175,6 +175,8 @@ void Node::NodeManager::run() {
         std::cerr << watcher->getErrorMsg() << std::endl;
         exit(-1);
     }
+
+    watcher->setFileEvent(std::make_shared<App::FileEvent>(path));
 
     std::shared_ptr<Event::Channel> fileWatcherChannel = std::make_shared<Event::Channel>(mainLoop,
             watcher->getINotifyId());

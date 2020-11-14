@@ -2,7 +2,7 @@
 // Created by zhanglei on 2020/11/11.
 //
 
-#include "EventLoop.h"
+#include "event/EventLoop.h"
 
 bool Event::EventLoop::set(int operation, Event::Channel* channel) {
     struct epoll_event event;
@@ -25,7 +25,6 @@ bool Event::EventLoop::start() {
     }
 
     quit = false;
-    std::cout << syscall(SYS_gettid) << std::endl;
 
     //事件循环
     while (!quit) {

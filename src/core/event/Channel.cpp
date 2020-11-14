@@ -2,8 +2,8 @@
 // Created by zhanglei on 2020/11/11.
 //
 
-#include "Channel.h"
-#include "EventLoop.h"
+#include "event/Channel.h"
+#include "event/EventLoop.h"
 
 void Event::Channel::update() {
     loop->updateChannel(this);

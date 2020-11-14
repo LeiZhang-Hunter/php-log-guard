@@ -11,6 +11,8 @@
 #include <string>
 #include <cstring>
 #include <iostream>
+#include <memory>
+#include "event/FileEvent.h"
 #include "Noncopyable.h"
 
 namespace OS {
@@ -18,6 +20,11 @@ namespace OS {
     public:
         UnixInodeWatcher() {
             iNotifyId = inotify_init();
+        }
+
+        bool setFileEvent(const std::shared_ptr<App::FileEvent>& event) {
+            fileEvent = event;
+            return true;
         }
 
         bool setWatcher(const std::string& path);
@@ -52,6 +59,7 @@ namespace OS {
         int iNotifyId;
         int watcherFd;
         int count = 0;
+        std::shared_ptr<App::FileEvent> fileEvent;
     };
 }
 
