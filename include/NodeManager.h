@@ -69,6 +69,7 @@ namespace Node {
         std::string executorCmd = "start";
         int mutexFd;
         std::map<int, std::shared_ptr<OS::UnixThread>> threadPool;
+        std::map<int, std::shared_ptr<Event::Channel>> fileChannel;
     };
 }
 

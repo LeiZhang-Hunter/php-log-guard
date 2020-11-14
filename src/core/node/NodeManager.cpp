@@ -162,6 +162,12 @@ void Node::NodeManager::run() {
 
     //将php-fpm php_errors.log 和 php-fpm-slow.log 分别 放到一个线程中做处理
     for (num = 0; num < pathStorage.size(); num++) {
+
+        //初始化线程运行，确保在加入监控之前线程已经运行
+        threadPool[num] = std::make_shared<OS::UnixThread>();
+        //运行线程
+        threadPool[num]->Start();
+
         //加入文件监控
         std::shared_ptr<OS::UnixInodeWatcher> watcher = std::make_shared<OS::UnixInodeWatcher>();
         if (!watcher->setWatcher(pathStorage[num])) {
@@ -171,13 +177,12 @@ void Node::NodeManager::run() {
 
         watcher->setFileEvent(std::make_shared<App::FileEvent>(pathStorage[num]));
 
-        std::shared_ptr<Event::Channel> fileWatcherChannel = std::make_shared<Event::Channel>(mainLoop,
+        std::shared_ptr<Event::Channel> fileWatcherChannel = std::make_shared<Event::Channel>(threadPool[num]->getEventLoop(),
                                                                                               watcher->getINotifyId());
         fileWatcherChannel->setOnReadCallable(std::bind(&OS::UnixInodeWatcher::watcherOnRead, watcher));
         fileWatcherChannel->enableReading();
-        threadPool[num] = std::make_shared<OS::UnixThread>();
-        //运行线程
-        threadPool[num]->Start();
+        fileChannel[num] = fileWatcherChannel;
+
     }
 
     //创建信号处理器
