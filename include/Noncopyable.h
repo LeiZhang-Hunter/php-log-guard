@@ -4,6 +4,9 @@
 
 #ifndef PHPLOGGUARD_NONCOPYABLE_H
 #define PHPLOGGUARD_NONCOPYABLE_H
+/**
+ * 禁止出现拷贝行为
+ */
 class Noncopyable
 {
 public:
