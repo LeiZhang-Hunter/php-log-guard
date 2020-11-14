@@ -106,6 +106,7 @@ void Node::NodeManager::onStop() {
  * 运行主程序
  */
 void Node::NodeManager::run() {
+    //注册命令行解析工具
     command->reg('c', std::bind(&NodeManager::getConfigPath, shared_from_this(), _1, _2, _3));
     command->reg('e', std::bind(&NodeManager::cmdExecutor, shared_from_this(), _1, _2, _3));
     command->parse();
@@ -121,12 +122,31 @@ void Node::NodeManager::run() {
 
     pidFile = configMap["sentry"]["pid_file"];
 
-    //检查监控的文件是否正确
-    std::string path = configMap["sentry_log_file"]["php-fom.log"];
-    if (path.empty()) {
+    std::vector<std::string> pathStorage;
+
+    //检查监控的php错误日志的位置
+    std::string php_errors_path = configMap["sentry_log_file"]["php_errors"];
+    if (php_errors_path.empty()) {
         std::cerr << "path not empty" << std::endl;
         exit(-1);
     }
+    pathStorage.push_back(php_errors_path);
+
+    //检查php-fpm的日志
+    std::string php_fpm_path = configMap["sentry_log_file"]["php-fpm"];
+    if (php_fpm_path.empty()) {
+        std::cerr << "php_fpm_path not empty" << std::endl;
+        exit(-1);
+    }
+    pathStorage.push_back(php_fpm_path);
+
+    //检查php的慢日志
+    std::string php_fpm_slow_path = configMap["sentry_log_file"]["php-fpm-slow"];
+    if (php_fpm_slow_path.empty()) {
+        std::cerr << "php_fpm_slow_path not empty" << std::endl;
+        exit(-1);
+    }
+    pathStorage.push_back(php_fpm_slow_path);
 
     if (executorCmd == "stop") {
         //获取程序的pid
@@ -137,23 +157,27 @@ void Node::NodeManager::run() {
 
     setStorageMutexPid(pidFile);
 
-    //校验工作线程数目是否是空的
-    if (configMap["sentry"]["file_sentry_thread_number"].empty()) {
-        std::cerr << "file_sentry_thread_number set error" << std::endl;
-        exit(-1);
-    }
-
-    //获取工作线程数目
-    int workerNumber = atoi(configMap["sentry"]["file_sentry_thread_number"].c_str());
-    if (workerNumber <= 0) {
-        std::cerr << "file_sentry_thread_number set error" << std::endl;
-        exit(-1);
-    }
-
     //启动线程池
     int num;
-    for (num = 0; num < workerNumber; num++) {
-        
+
+    //将php-fpm php_errors.log 和 php-fpm-slow.log 分别 放到一个线程中做处理
+    for (num = 0; num < pathStorage.size(); num++) {
+        //加入文件监控
+        std::shared_ptr<OS::UnixInodeWatcher> watcher = std::make_shared<OS::UnixInodeWatcher>();
+        if (!watcher->setWatcher(pathStorage[num])) {
+            std::cerr << watcher->getErrorMsg() << std::endl;
+            exit(-1);
+        }
+
+        watcher->setFileEvent(std::make_shared<App::FileEvent>(pathStorage[num]));
+
+        std::shared_ptr<Event::Channel> fileWatcherChannel = std::make_shared<Event::Channel>(mainLoop,
+                                                                                              watcher->getINotifyId());
+        fileWatcherChannel->setOnReadCallable(std::bind(&OS::UnixInodeWatcher::watcherOnRead, watcher));
+        fileWatcherChannel->enableReading();
+        threadPool[num] = std::make_shared<OS::UnixThread>();
+        //运行线程
+        threadPool[num]->Start();
     }
 
     //创建信号处理器
@@ -168,20 +192,7 @@ void Node::NodeManager::run() {
     signalChannel->setOnReadCallable(std::bind(&NodeManager::onStop, shared_from_this()));
     signalChannel->enableReading();
 
-    //加入文件监控
-    std::shared_ptr<OS::UnixInodeWatcher> watcher = std::make_shared<OS::UnixInodeWatcher>();
 
-    if (!watcher->setWatcher(path)) {
-        std::cerr << watcher->getErrorMsg() << std::endl;
-        exit(-1);
-    }
-
-    watcher->setFileEvent(std::make_shared<App::FileEvent>(path));
-
-    std::shared_ptr<Event::Channel> fileWatcherChannel = std::make_shared<Event::Channel>(mainLoop,
-            watcher->getINotifyId());
-    fileWatcherChannel->setOnReadCallable(std::bind(&OS::UnixInodeWatcher::watcherOnRead, watcher));
-    fileWatcherChannel->enableReading();
 
     //加入
     mainLoop->start();

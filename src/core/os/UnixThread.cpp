@@ -16,6 +16,8 @@ OS::UnixThread::~UnixThread() {
     {
         std::cerr << "CThread->ReleaseThread Join Error" << std::endl;
     }
+
+    delete loop;
 }
 
 /**
@@ -24,7 +26,12 @@ OS::UnixThread::~UnixThread() {
  * @return
  */
 void* OS::UnixThread::ThreadProc(void *arg) {
+    //创建独立的线程运行空间
+    OS::UnixThreadProc *proc = static_cast<OS::UnixThreadProc *>(arg);
+    //运行线程
+    proc->runThread();
 
+    return (void *)0;
 }
 
 //启动线程
@@ -35,16 +42,26 @@ bool OS::UnixThread::Start() {
     pthread_attr_init(&attr);
 
     bool mRunStatus = false;
+
+    //创建独立的线程运行空间
+    UnixThreadProc* proc = new UnixThreadProc(loop, latch);
     /*
      *启动线程
      */
-    if(pthread_create(&mThreadID,&attr,ThreadProc,this) == 0)
+    if(pthread_create(&mThreadID,&attr,ThreadProc,proc) == 0)
     {
         mRunStatus=true;
+    } else {
+        delete proc;
+        return mRunStatus;
     }
+
+    latch->wait();
+    tid = proc->getThreadTid();
     /*
      *释放属性
      */
+    std::cout << syscall(SYS_gettid) << std::endl;
     pthread_attr_destroy(&attr);
     return mRunStatus;
 }

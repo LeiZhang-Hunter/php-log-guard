@@ -8,16 +8,16 @@
 namespace OS {
     class UnixAutoMutex {
     public:
-        UnixAutoMutex(UnixMutex &mutex_) :mutex(mutex_){
-            mutex.lock();
+        UnixAutoMutex(UnixMutex &mutex_) :mutexVar(mutex_){
+            mutexVar.lock();
         }
 
         ~UnixAutoMutex() {
-            mutex.unlock();
+            mutexVar.unlock();
         }
 
     private:
-        UnixMutex& mutex;
+        UnixMutex& mutexVar;
     };
 }
 #endif //PHPLOGGUARD_UNIXAUTOMUTEX_H

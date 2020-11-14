@@ -6,6 +6,7 @@
 #define PHPLOGGUARD_UNIXCONDITIONMUTEX_H
 
 #include <pthread.h>
+#include <iostream>
 #include "UnixMutex.h"
 
 namespace OS {
@@ -37,7 +38,9 @@ namespace OS {
          * 广播
          */
         void broadCast() {
-            pthread_cond_broadcast(&condition);
+            int res = pthread_cond_broadcast(&condition);
+            if (res == -1) {
+            }
         }
 
         /**
@@ -47,7 +50,7 @@ namespace OS {
             pthread_cond_destroy(&condition);
         }
     private:
-        pthread_cond_t condition __attribute__((guarded_by(&mutex)));
+        pthread_cond_t condition;
         UnixMutex& mutex;
     };
 }

@@ -5,9 +5,18 @@
 #include "os/UnixCountDownLatch.h"
 
 void OS::UnixCountDownLatch::down() {
-
+    UnixAutoMutex guard(mutex);
+    count--;
+    if (count == 0) {
+        condition.broadCast();
+    }
 }
 
 void OS::UnixCountDownLatch::wait() {
+    UnixAutoMutex guard(mutex);
+    condition.wait();
+}
+
+OS::UnixCountDownLatch::~UnixCountDownLatch() {
 
 }

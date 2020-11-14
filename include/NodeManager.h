@@ -16,6 +16,7 @@
 #include "os/UnixSignalDescription.h"
 #include "event/EventLoop.h"
 #include "os/UnixInodeWatcher.h"
+#include "os/UnixThread.h"
 using namespace std::placeholders;
 namespace Node {
 
@@ -67,6 +68,7 @@ namespace Node {
         std::string pidFile;
         std::string executorCmd = "start";
         int mutexFd;
+        std::map<int, std::shared_ptr<OS::UnixThread>> threadPool;
     };
 }
 

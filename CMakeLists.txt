@@ -47,7 +47,9 @@ set(SOURCE_FILES
         include/os/UnixCountDownLatch.h
         include/os/UnixMutex.h
         include/os/UnixConditionMutex.h
-        src/core/os/UnixConditionMutex.cpp include/os/UnixAutoMutex.h)
+        include/os/UnixAutoMutex.h
+        include/os/UnixThreadProc.h
+        src/core/os/UnixThreadProc.cpp)
 #加入主要文件
 add_executable(phpLogGuard ${SOURCE_FILES})
 #CFLAGS='-g -O0'

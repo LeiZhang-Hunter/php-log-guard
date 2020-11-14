@@ -8,10 +8,10 @@
 #include "Noncopyable.h"
 
 namespace OS {
-    class __attribute__((capability("mutex"))) UnixMutex : Noncopyable{
+    class UnixMutex : Noncopyable{
     public:
         UnixMutex() {
-            pthread_mutex_init(&mutex, &mutexAttr);
+            pthread_mutex_init(&mutex, nullptr);
         }
 
         void lock() {

@@ -7,6 +7,7 @@
 
 #include "UnixMutex.h"
 #include "UnixConditionMutex.h"
+#include "UnixAutoMutex.h"
 namespace OS {
     class UnixCountDownLatch {
 
