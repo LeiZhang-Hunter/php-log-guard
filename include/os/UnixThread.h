@@ -100,8 +100,6 @@ namespace OS {
 
         //线程运行状态
         bool mRunStatus __attribute__((guarded_by(mMutex)));
-
-
     };
 }
 

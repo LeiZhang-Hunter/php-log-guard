@@ -26,6 +26,10 @@ namespace OS {
             pthread_mutex_destroy(&mutex);
         }
 
+        pthread_mutex_t* getMutex() {
+            return &mutex;
+        }
+
     private:
         pthread_mutex_t mutex;
         pthread_mutexattr_t mutexAttr;
