@@ -4,6 +4,10 @@
 
 #include "NodeManager.h"
 #include "event/EventLoop.h"
+#include "app/PHPError.h"
+#include "app/PHPFpmError.h"
+#include "app/PHPFpmSlow.h"
+
 
 /**
  * 构造函数
@@ -122,7 +126,9 @@ void Node::NodeManager::run() {
 
     pidFile = configMap["sentry"]["pid_file"];
 
+    //存储路径
     std::vector<std::string> pathStorage;
+    std::vector<std::function<void(const std::string&)>> handle;
 
     //检查监控的php错误日志的位置
     std::string php_errors_path = configMap["sentry_log_file"]["php_errors"];
@@ -131,6 +137,9 @@ void Node::NodeManager::run() {
         exit(-1);
     }
     pathStorage.push_back(php_errors_path);
+    std::shared_ptr<App::PHPError> phpErrorHandle = std::make_shared<App::PHPError>();
+    //在容器尾部添加一个元素，这个元素原地构造，不需要触发拷贝构造和转移构造
+    handle.emplace_back(std::bind(&App::PHPError::onReceive, phpErrorHandle, _1));
 
     //检查php-fpm的日志
     std::string php_fpm_path = configMap["sentry_log_file"]["php-fpm"];
@@ -139,6 +148,9 @@ void Node::NodeManager::run() {
         exit(-1);
     }
     pathStorage.push_back(php_fpm_path);
+    std::shared_ptr<App::PHPFpmError> phpFpmErrorHandle = std::make_shared<App::PHPFpmError>();
+    //在容器尾部添加一个元素，这个元素原地构造，不需要触发拷贝构造和转移构造
+    handle.emplace_back(std::bind(&App::PHPFpmError::onReceive, phpFpmErrorHandle, _1));
 
     //检查php的慢日志
     std::string php_fpm_slow_path = configMap["sentry_log_file"]["php-fpm-slow"];
@@ -147,6 +159,9 @@ void Node::NodeManager::run() {
         exit(-1);
     }
     pathStorage.push_back(php_fpm_slow_path);
+    std::shared_ptr<App::PHPFpmSlow> PHPFpmSlowHandle = std::make_shared<App::PHPFpmSlow>();
+    //在容器尾部添加一个元素，这个元素原地构造，不需要触发拷贝构造和转移构造
+    handle.emplace_back(std::bind(&App::PHPFpmSlow::onReceive, PHPFpmSlowHandle, _1));
 
     if (executorCmd == "stop") {
         //获取程序的pid
@@ -175,7 +190,8 @@ void Node::NodeManager::run() {
             exit(-1);
         }
 
-        watcher->setFileEvent(std::make_shared<App::FileEvent>(pathStorage[num], watcher));
+        std::shared_ptr<App::FileEvent> fileNotifyEvent = std::make_shared<App::FileEvent>(pathStorage[num], watcher);
+        watcher->setFileEvent(fileNotifyEvent);
 
         std::shared_ptr<Event::Channel> fileWatcherChannel = std::make_shared<Event::Channel>(threadPool[num]->getEventLoop(),
                                                                                               watcher->getINotifyId());

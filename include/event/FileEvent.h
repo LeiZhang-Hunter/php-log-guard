@@ -53,6 +53,10 @@ namespace App {
          */
         void onAccess();
 
+        void setOnReceive() {
+
+        }
+
         ~FileEvent() {
             closeFile();
         }
