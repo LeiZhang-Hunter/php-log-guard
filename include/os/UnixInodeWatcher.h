@@ -18,16 +18,41 @@
 namespace OS {
     class UnixInodeWatcher : public Noncopyable {
     public:
-        UnixInodeWatcher() {
+        /**
+         * 初始化inode观察者
+         * @param _path
+         */
+        UnixInodeWatcher(const std::string& _path) {
             iNotifyId = inotify_init();
+            watcherPath = _path;
         }
 
+        /**
+         * 设置inode观察者触发器
+         * @param event
+         * @return
+         */
         bool setFileEvent(const std::shared_ptr<App::FileEvent>& event) {
             fileEvent = event;
             return true;
         }
 
-        bool setWatcher(const std::string& path);
+        /**
+         * 打开inode观察模式
+         * @return
+         */
+        bool enableWatcher();
+
+        /**
+         * 关闭inode观察节点
+         * @return
+         */
+        bool disableWatcher();
+
+        /**
+         * 重载inode
+         */
+        void reloadWatcher();
 
         /**
          * 获取最后的错误码
@@ -60,6 +85,7 @@ namespace OS {
         int watcherFd;
         int count = 0;
         std::shared_ptr<App::FileEvent> fileEvent;
+        std::string watcherPath;
     };
 }
 

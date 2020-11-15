@@ -4,12 +4,23 @@
 
 #include "os/UnixInodeWatcher.h"
 
-bool OS::UnixInodeWatcher::setWatcher(const std::string& path) {
-    watcherFd = inotify_add_watch(iNotifyId, path.c_str(), IN_ATTRIB |IN_MODIFY | IN_ACCESS |IN_CREATE |IN_DELETE |IN_MOVE_SELF);
+bool OS::UnixInodeWatcher::enableWatcher() {
+    watcherFd = inotify_add_watch(iNotifyId, watcherPath.c_str(), IN_ATTRIB |IN_MODIFY | IN_ACCESS |IN_CREATE |IN_DELETE |IN_MOVE_SELF);
     if (watcherFd == -1) {
+        std::cerr << getErrorMsg() << std::endl;
         return false;
     }
     return true;
+}
+
+bool OS::UnixInodeWatcher::disableWatcher() {
+    inotify_rm_watch(iNotifyId, watcherFd);
+    return true;
+}
+
+void OS::UnixInodeWatcher::reloadWatcher() {
+    disableWatcher();
+    enableWatcher();
 }
 
 void OS::UnixInodeWatcher::watcherOnRead() {

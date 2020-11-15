@@ -169,13 +169,13 @@ void Node::NodeManager::run() {
         threadPool[num]->Start();
 
         //加入文件监控
-        std::shared_ptr<OS::UnixInodeWatcher> watcher = std::make_shared<OS::UnixInodeWatcher>();
-        if (!watcher->setWatcher(pathStorage[num])) {
+        std::shared_ptr<OS::UnixInodeWatcher> watcher = std::make_shared<OS::UnixInodeWatcher>(pathStorage[num]);
+        if (!watcher->enableWatcher()) {
             std::cerr << watcher->getErrorMsg() << std::endl;
             exit(-1);
         }
 
-        watcher->setFileEvent(std::make_shared<App::FileEvent>(pathStorage[num]));
+        watcher->setFileEvent(std::make_shared<App::FileEvent>(pathStorage[num], watcher));
 
         std::shared_ptr<Event::Channel> fileWatcherChannel = std::make_shared<Event::Channel>(threadPool[num]->getEventLoop(),
                                                                                               watcher->getINotifyId());

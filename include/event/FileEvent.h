@@ -7,13 +7,21 @@
 
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <regex>
+#include <unistd.h>
 
 #include <iostream>
+#include <memory>
+#include <vector>
+
+namespace OS {
+    class UnixInodeWatcher;
+}
 namespace App {
+
+
     class FileEvent {
     public:
-        FileEvent(const std::string& path);
+        FileEvent(const std::string& path, std::shared_ptr<OS::UnixInodeWatcher>& _watcher);
 
         /**
          * 修改文件时候触发的函数
@@ -71,6 +79,11 @@ namespace App {
         int monitorFileFd;
         //偏移量
         size_t offset;
+
+        /**
+         * 观察者
+         */
+        std::shared_ptr<OS::UnixInodeWatcher> watcher;
     };
 }
 #endif //PHPLOGGUARD_FILEEVENT_H

@@ -2,8 +2,10 @@
 // Created by zhanglei on 2020/11/14.
 //
 #include "event/FileEvent.h"
-#include <unistd.h>
-App::FileEvent::FileEvent(const std::string& path) {
+#include "os/UnixInodeWatcher.h"
+
+App::FileEvent::FileEvent(const std::string& path, std::shared_ptr<OS::UnixInodeWatcher>& _watcher)  :
+watcher(_watcher) {
     filePath = path;
     offset = 0;
 
@@ -21,7 +23,7 @@ bool App::FileEvent::closeFile() {
 }
 
 bool App::FileEvent::openFile() {
-    monitorFileFd = open(filePath.c_str(), O_CREAT|O_RDWR,S_IRUSR);
+    monitorFileFd = open(filePath.c_str(), O_CREAT|O_RDWR, S_IRUSR|S_IWUSR);
 
     if (monitorFileFd == -1) {
         std::cerr << filePath.c_str() << ";error:" << strerror(errno) << std::endl;
@@ -61,6 +63,9 @@ void App::FileEvent::onDelete() {
 }
 
 void App::FileEvent::onAttrChange() {
+    closeFile();
+    openFile();
+    watcher->reloadWatcher();
     std::cout << "onAttrChange" << std::endl;
 }
 
