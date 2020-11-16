@@ -11,7 +11,15 @@
 namespace App {
     class PHPFpmError : Noncopyable ,std::enable_shared_from_this<PHPFpmError> {
     public:
+        /**
+         * 收到函数的时候触发的函数地址
+         */
         void onReceive(const std::string &);
+
+        /**
+         * 文件被关闭的时候触发的函数
+         */
+        void onClose(const std::string &message);
     };
 }
 #endif //PHPLOGGUARD_PHPFPMERROR_H

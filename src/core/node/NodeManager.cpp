@@ -128,7 +128,7 @@ void Node::NodeManager::run() {
 
     //存储路径
     std::vector<std::string> pathStorage;
-    std::vector<std::function<void(const std::string&)>> handle;
+    std::vector<std::map<std::string, std::function<void(const std::string&)>>> handle;
 
     //检查监控的php错误日志的位置
     std::string php_errors_path = configMap["sentry_log_file"]["php_errors"];
@@ -136,10 +136,17 @@ void Node::NodeManager::run() {
         std::cerr << "path not empty" << std::endl;
         exit(-1);
     }
+
+    //存储要监控的文件路径
     pathStorage.push_back(php_errors_path);
+
+    //将处理函数加入回调的map中
     std::shared_ptr<App::PHPError> phpErrorHandle = std::make_shared<App::PHPError>();
+    std::map<std::string, std::function<void(const std::string&)>> phpErrorMap;
+    phpErrorMap[OnReceive] = std::bind(&App::PHPError::onReceive, phpErrorHandle, _1);
+    phpErrorMap[OnClose] = std::bind(&App::PHPError::onClose, phpErrorHandle, _1);
     //在容器尾部添加一个元素，这个元素原地构造，不需要触发拷贝构造和转移构造
-    handle.emplace_back(std::bind(&App::PHPError::onReceive, phpErrorHandle, _1));
+    handle.emplace_back(phpErrorMap);
 
     //检查php-fpm的日志
     std::string php_fpm_path = configMap["sentry_log_file"]["php-fpm"];
@@ -147,10 +154,17 @@ void Node::NodeManager::run() {
         std::cerr << "php_fpm_path not empty" << std::endl;
         exit(-1);
     }
+
+    //存储要监控的文件路径
     pathStorage.push_back(php_fpm_path);
+
+    //phpFpmError的map
     std::shared_ptr<App::PHPFpmError> phpFpmErrorHandle = std::make_shared<App::PHPFpmError>();
+    std::map<std::string, std::function<void(const std::string&)>> PHPFpmErrorMap;
+    PHPFpmErrorMap[OnReceive] = std::bind(&App::PHPFpmError::onReceive, phpFpmErrorHandle, _1);
+    PHPFpmErrorMap[OnClose] = std::bind(&App::PHPFpmError::onClose, phpFpmErrorHandle, _1);
     //在容器尾部添加一个元素，这个元素原地构造，不需要触发拷贝构造和转移构造
-    handle.emplace_back(std::bind(&App::PHPFpmError::onReceive, phpFpmErrorHandle, _1));
+    handle.emplace_back(PHPFpmErrorMap);
 
     //检查php的慢日志
     std::string php_fpm_slow_path = configMap["sentry_log_file"]["php-fpm-slow"];
@@ -158,10 +172,15 @@ void Node::NodeManager::run() {
         std::cerr << "php_fpm_slow_path not empty" << std::endl;
         exit(-1);
     }
+
     pathStorage.push_back(php_fpm_slow_path);
+
     std::shared_ptr<App::PHPFpmSlow> PHPFpmSlowHandle = std::make_shared<App::PHPFpmSlow>();
-    //在容器尾部添加一个元素，这个元素原地构造，不需要触发拷贝构造和转移构造
-    handle.emplace_back(std::bind(&App::PHPFpmSlow::onReceive, PHPFpmSlowHandle, _1));
+    std::map<std::string, std::function<void(const std::string&)>> PHPFpmSlowMap;
+    PHPFpmSlowMap[OnReceive] = std::bind(&App::PHPFpmSlow::onReceive, PHPFpmSlowHandle, _1);
+    PHPFpmErrorMap[OnClose] = std::bind(&App::PHPFpmSlow::onClose, PHPFpmSlowHandle, _1);
+    //PHPFpmSlowMap，这个元素原地构造，不需要触发拷贝构造和转移构造
+    handle.emplace_back(PHPFpmErrorMap);
 
     if (executorCmd == "stop") {
         //获取程序的pid
@@ -191,7 +210,12 @@ void Node::NodeManager::run() {
         }
 
         std::shared_ptr<App::FileEvent> fileNotifyEvent = std::make_shared<App::FileEvent>(pathStorage[num], watcher);
+
+        //设置文件发生变化的时候的通知事件
         watcher->setFileEvent(fileNotifyEvent);
+
+        fileNotifyEvent->setOnReceiveApi(handle[num][OnReceive]);
+        fileNotifyEvent->setOnCloseApi(handle[num][OnClose]);
 
         std::shared_ptr<Event::Channel> fileWatcherChannel = std::make_shared<Event::Channel>(threadPool[num]->getEventLoop(),
                                                                                               watcher->getINotifyId());
@@ -213,7 +237,7 @@ void Node::NodeManager::run() {
     signalChannel->setOnReadCallable(std::bind(&NodeManager::onStop, shared_from_this()));
     signalChannel->enableReading();
 
-
+    std::cout << "finish" << std::endl;
 
     //加入
     mainLoop->start();

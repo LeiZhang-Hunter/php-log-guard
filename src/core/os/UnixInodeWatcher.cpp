@@ -5,7 +5,7 @@
 #include "os/UnixInodeWatcher.h"
 
 bool OS::UnixInodeWatcher::enableWatcher() {
-    watcherFd = inotify_add_watch(iNotifyId, watcherPath.c_str(), IN_ATTRIB |IN_MODIFY | IN_ACCESS |IN_CREATE |IN_DELETE |IN_MOVE_SELF);
+    watcherFd = inotify_add_watch(iNotifyId, watcherPath.c_str(), IN_ATTRIB |IN_MODIFY  |IN_CREATE |IN_DELETE |IN_MOVE_SELF);
     if (watcherFd == -1) {
         std::cerr << getErrorMsg() << std::endl;
         return false;
@@ -25,6 +25,7 @@ void OS::UnixInodeWatcher::reloadWatcher() {
 
 void OS::UnixInodeWatcher::watcherOnRead() {
     char buf[BUFSIZ];
+    bzero(buf, BUFSIZ);
     size_t i = 0;
     struct inotify_event* event;
     ssize_t readBufSize = read(iNotifyId, buf, BUFSIZ);

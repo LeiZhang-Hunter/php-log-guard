@@ -18,6 +18,10 @@
 #include "os/UnixInodeWatcher.h"
 #include "os/UnixThread.h"
 using namespace std::placeholders;
+
+#define OnReceive "OnReceive"
+#define OnClose "OnClose"
+
 namespace Node {
 
     class NodeManager : public std::enable_shared_from_this<NodeManager>, Noncopyable {
@@ -68,7 +72,9 @@ namespace Node {
         std::string pidFile;
         std::string executorCmd = "start";
         int mutexFd;
+        //线程池
         std::map<int, std::shared_ptr<OS::UnixThread>> threadPool;
+        //文件管道
         std::map<int, std::shared_ptr<Event::Channel>> fileChannel;
     };
 }

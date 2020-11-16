@@ -7,3 +7,7 @@
 void App::PHPFpmSlow::onReceive(const std::string &buffer) {
 
 }
+
+void App::PHPFpmSlow::onClose(const std::string &message) {
+
+}

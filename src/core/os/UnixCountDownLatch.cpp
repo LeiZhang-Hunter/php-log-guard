@@ -14,7 +14,9 @@ void OS::UnixCountDownLatch::down() {
 
 void OS::UnixCountDownLatch::wait() {
     UnixAutoMutex guard(mutex);
-    condition.wait();
+    while (count > 0) {
+        condition.wait();
+    }
 }
 
 OS::UnixCountDownLatch::~UnixCountDownLatch() {

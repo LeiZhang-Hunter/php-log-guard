@@ -7,3 +7,7 @@
 void App::PHPFpmError::onReceive(const std::string &buffer) {
 
 }
+
+void App::PHPFpmError::onClose(const std::string &message) {
+
+}
