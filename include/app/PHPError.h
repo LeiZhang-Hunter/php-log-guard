@@ -19,12 +19,18 @@ namespace App {
          */
         void onReceive(const std::string &);
 
+        void setRegEx(const std::string& regexRule) {
+            rule = regexRule;
+        }
+
         /**
          * 文件被关闭的时候触发的函数
          */
         void onClose(const std::string &message);
 
         std::string errorBuffer;
+
+        std::string rule;
     };
 }
 #endif //PHPLOGGUARD_PHPERROR_H

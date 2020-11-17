@@ -42,5 +42,7 @@ void App::PHPError::onReceive(const std::string &buffer) {
 }
 
 void App::PHPError::onClose(const std::string &message) {
-
+    if (!errorBuffer.empty()) {
+        errorBuffer.clear();
+    }
 }

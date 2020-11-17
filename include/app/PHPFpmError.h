@@ -20,6 +20,14 @@ namespace App {
          * 文件被关闭的时候触发的函数
          */
         void onClose(const std::string &message);
+
+        void setRegEx(const std::string& regexRule) {
+            rule = regexRule;
+        }
+
+    private:
+        std::string phpFpmBuffer;
+        std::string rule;
     };
 }
 #endif //PHPLOGGUARD_PHPFPMERROR_H
