@@ -6,7 +6,7 @@
 
 void App::PHPError::onReceive(const std::string &buffer) {
     std::smatch result;
-    std::regex pattern("\\[(.*?)\\]\\s(.*?):\\s\\s(.*?)\n");	//匹配错误日志内容
+    std::regex pattern(rule);	//匹配错误日志内容
     size_t errorBufferLen = errorBuffer.length();
     size_t bufferLen = buffer.length();
 
