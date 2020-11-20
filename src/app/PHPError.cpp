@@ -2,6 +2,7 @@
 // Created by zhanglei on 2020/11/14.
 //
 
+#include <thread>
 #include "app/PHPError.h"
 
 void App::PHPError::onReceive(const std::string &buffer) {
@@ -17,28 +18,39 @@ void App::PHPError::onReceive(const std::string &buffer) {
     std::string::const_iterator iterStart = errorBuffer.begin();
     std::string::const_iterator iterEnd = errorBuffer.end();
     std::string temp;
+    std::string atelLog;
+
     while (regex_search(iterStart, iterEnd, result, pattern))
     {
-        temp = result[1];
-        std::cout << temp << std::endl;
-        std::cout << result[2] << std::endl;
-        std::cout << result[3] << std::endl;
-
+        atelLog.clear();
+        atelLog.append(util->formatPhpDateToJavaDate(result[1]));
+        atelLog.append(" ");
+        atelLog.append("php_errors");
+        atelLog.append(" ");
+        atelLog.append(result[2]);
+        atelLog.append(" ");
+        atelLog.append(result[3]);
+        std::cout << atelLog << std::endl;
         iterStart = result[0].second;	//更新搜索起始位置,搜索剩下的字符串
-
         continue;
     }
 
     //查看结尾有多少个字符串没有匹配到
     size_t lastByte = result.position();
+
     if (lastByte > 0) {
         if (bufferLen + lastByte <= BUFSIZ * 10) {
-            errorBuffer.append(errorBuffer.substr(bufferLen - lastByte, lastByte));
+            errorBuffer.assign(errorBuffer.substr(bufferLen - lastByte, lastByte));
         } else {
             //缓冲区占用内存太多，放弃缓冲区内容
             errorBuffer.clear();
         }
+    } else {
+        //清空缓冲区
+        errorBuffer.clear();
     }
+
+
 }
 
 void App::PHPError::onClose(const std::string &message) {

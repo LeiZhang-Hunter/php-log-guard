@@ -11,9 +11,13 @@
 #include <regex>
 
 #include "Noncopyable.h"
+#include "os/UnixUtil.h"
 namespace App {
     class PHPError : Noncopyable ,std::enable_shared_from_this<PHPError> {
     public:
+        PHPError() : util(new OS::UnixUtil()){
+
+        }
         /**
          * 收到函数的时候触发的函数地址
          */
@@ -31,6 +35,8 @@ namespace App {
         std::string errorBuffer;
 
         std::string rule;
+
+        std::unique_ptr<OS::UnixUtil> util;
     };
 }
 #endif //PHPLOGGUARD_PHPERROR_H

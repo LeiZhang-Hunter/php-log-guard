@@ -79,7 +79,7 @@ void App::FileEvent::onModify() {
     char readBuffer[BUFSIZ];
 
     //如果缓冲区要读取的长度超过了BUFSIZE，那么每次读取BUFSIZE到缓冲区，循环读取，一直到读完
-    if (readBytes >= BUFSIZ) {
+    if (readSum >= BUFSIZ) {
         readBytes = BUFSIZ;
     } else {
         readBytes = readSum;
@@ -87,8 +87,11 @@ void App::FileEvent::onModify() {
 
     //必须要读完,读不完不能停止
     while (1) {
+        if (readBytes == 0 || readSum == 0) {
+            break;
+        }
         readSize = pread(monitorFileFd, readBuffer, readBytes, oldPosition);
-        if (readSize < 0) {
+        if (readSize <= 0) {
             //读完了
             if (errno == EAGAIN) {
                 break;
