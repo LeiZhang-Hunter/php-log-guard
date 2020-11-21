@@ -5,10 +5,11 @@
 #include <thread>
 #include "app/PHPError.h"
 
-void App::PHPError::onReceive(const std::string& buffer) {
+void App::PHPError::onReceive(const std::string &buffer) {
     std::smatch result;
     std::regex pattern(rule);	//匹配错误日志内容
-
+    size_t bufferLen = buffer.length();
+    std::cout << bufferLen << std::endl;
     //拼接加入缓冲区
     errorBuffer.append(buffer);
     size_t errorBufferLen = errorBuffer.length();
@@ -32,13 +33,18 @@ void App::PHPError::onReceive(const std::string& buffer) {
         iterStart = result[0].second;	//更新搜索起始位置,搜索剩下的字符串
         continue;
     }
-    std::cout << atelLog << std::endl;
 
     //查看结尾有多少个字符串没有匹配到
     size_t lastByte = result.position();
 
     if (lastByte > 0) {
-        errorBuffer.assign(errorBuffer.substr(errorBufferLen - lastByte, lastByte));
+
+        if (bufferLen + lastByte <= BUFSIZ * 10) {
+            errorBuffer.assign(errorBuffer.substr(errorBufferLen - lastByte, lastByte));
+        } else {
+            //缓冲区占用内存太多，放弃缓冲区内容
+            errorBuffer.clear();
+        }
     } else {
         //清空缓冲区
         errorBuffer.clear();

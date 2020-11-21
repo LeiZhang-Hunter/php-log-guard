@@ -4,6 +4,7 @@
 
 #ifndef PHPLOGGUARD_PHPERROR_H
 #define PHPLOGGUARD_PHPERROR_H
+
 #include <string>
 #include <regex>
 #include <memory>
@@ -12,22 +13,24 @@
 
 #include "Noncopyable.h"
 #include "os/UnixUtil.h"
+
 namespace App {
-    class PHPError : Noncopyable ,std::enable_shared_from_this<PHPError> {
+    class PHPError : Noncopyable, std::enable_shared_from_this<PHPError> {
     public:
-        PHPError() : util(new OS::UnixUtil()){
+        PHPError() : util(new OS::UnixUtil()) {
 
         }
+
         /**
          * 收到函数的时候触发的函数地址
          */
-        void onReceive(const std::string&);
+        void onReceive(const std::string &);
 
         /**
          * 设置正则表达式规则
          * @param regexRule
          */
-        void setRegEx(const std::string& regexRule) {
+        void setRegEx(const std::string &regexRule) {
             rule = regexRule;
         }
 
@@ -35,6 +38,10 @@ namespace App {
          * 文件被关闭的时候触发的函数
          */
         void onClose(const std::string &message);
+
+        void setMaxBuffer(size_t maxBufferSize) {
+            maxBufferSize = bufferSize;
+        }
 
         //缓冲区
         std::string errorBuffer;
@@ -44,6 +51,8 @@ namespace App {
 
         //通用工具
         std::unique_ptr<OS::UnixUtil> util;
+
+        size_t bufferSize;
     };
 }
 #endif //PHPLOGGUARD_PHPERROR_H

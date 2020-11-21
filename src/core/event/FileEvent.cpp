@@ -4,8 +4,8 @@
 #include "event/FileEvent.h"
 #include "os/UnixInodeWatcher.h"
 
-App::FileEvent::FileEvent(const std::string& path, std::shared_ptr<OS::UnixInodeWatcher>& _watcher)  :
-watcher(_watcher) {
+App::FileEvent::FileEvent(const std::string &path, std::shared_ptr<OS::UnixInodeWatcher> &_watcher) :
+        watcher(_watcher) {
     filePath = path;
 
     if (!openFile()) {
@@ -25,13 +25,13 @@ bool App::FileEvent::closeFile() {
 }
 
 bool App::FileEvent::openFile() {
-    monitorFileFd = open(filePath.c_str(), O_CREAT|O_RDWR, S_IRUSR|S_IWUSR);
+    monitorFileFd = open(filePath.c_str(), O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
 
     if (monitorFileFd == -1) {
         std::cerr << filePath.c_str() << ";error:" << strerror(errno) << std::endl;
         return -1;
     }
-    int flags = fcntl(monitorFileFd,F_GETFL,0);
+    int flags = fcntl(monitorFileFd, F_GETFL, 0);
     fcntl(monitorFileFd, F_SETFL, flags | O_NONBLOCK);
     return monitorFileFd;
 }
@@ -64,10 +64,27 @@ void App::FileEvent::onModify() {
     size_t oldPosition = offset;
     //刷新位置
     size_t nowPosition = getFileSize();
+    size_t lastBufferLen = 0;
+    size_t readBufferSize = 0;
 
     //到达了缓冲区大小
     if ((nowPosition - oldPosition) >= bufferSize) {
-        flush(oldPosition, nowPosition);
+        //每次刷新bufferSize 到缓冲区,不要把过大的内存输出进去
+        lastBufferLen = nowPosition - oldPosition;
+        while (lastBufferLen){
+            if (lastBufferLen >= bufferSize) {
+                readBufferSize = bufferSize;
+            } else {
+                readBufferSize = lastBufferLen;
+            }
+
+            //冲刷进入磁盘
+            flush(oldPosition, oldPosition + readBufferSize);
+            oldPosition +=  readBufferSize;
+
+            lastBufferLen = nowPosition - (oldPosition);
+        }
+
         offset = nowPosition;
     }
 }
@@ -78,7 +95,6 @@ void App::FileEvent::flushNoMaxBuffer() {
     flushOffset();
     flush(oldPosition, offset);
 }
-
 
 
 void App::FileEvent::flush(size_t oldPosition, ssize_t currentPosition) {
@@ -101,6 +117,7 @@ void App::FileEvent::flush(size_t oldPosition, ssize_t currentPosition) {
 
     //读取的缓冲区
     char readBuffer[BUFSIZ];
+    std::string tmpBuffer;
 
     //如果缓冲区要读取的长度超过了BUFSIZE，那么每次读取BUFSIZE到缓冲区，循环读取，一直到读完
     if (readSum >= BUFSIZ) {
@@ -121,7 +138,7 @@ void App::FileEvent::flush(size_t oldPosition, ssize_t currentPosition) {
                 break;
             }
 
-            if (errno ==  EINTR) {
+            if (errno == EINTR) {
                 continue;
             }
 
@@ -129,7 +146,7 @@ void App::FileEvent::flush(size_t oldPosition, ssize_t currentPosition) {
         } else {
             oldPosition += readSize;
             readBuffer[readSize] = '\0';
-            modifyFunc(readBuffer);
+            tmpBuffer.append(readBuffer);
 
             readSum -= readSize;
 
@@ -144,6 +161,9 @@ void App::FileEvent::flush(size_t oldPosition, ssize_t currentPosition) {
             }
         }
     }
+
+    modifyFunc(tmpBuffer);
+
 }
 
 void App::FileEvent::onCreate() {
