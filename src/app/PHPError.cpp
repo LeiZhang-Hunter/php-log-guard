@@ -8,11 +8,11 @@
 void App::PHPError::onReceive(const std::string &buffer) {
     std::smatch result;
     std::regex pattern(rule);	//匹配错误日志内容
-    size_t errorBufferLen = errorBuffer.length();
     size_t bufferLen = buffer.length();
 
     //拼接加入缓冲区
     errorBuffer.append(buffer);
+    size_t errorBufferLen = errorBuffer.length();
 
     //迭代器声明
     std::string::const_iterator iterStart = errorBuffer.begin();
@@ -30,7 +30,6 @@ void App::PHPError::onReceive(const std::string &buffer) {
         atelLog.append(result[2]);
         atelLog.append(" ");
         atelLog.append(result[3]);
-        std::cout << atelLog << std::endl;
         iterStart = result[0].second;	//更新搜索起始位置,搜索剩下的字符串
         continue;
     }
@@ -39,8 +38,9 @@ void App::PHPError::onReceive(const std::string &buffer) {
     size_t lastByte = result.position();
 
     if (lastByte > 0) {
+
         if (bufferLen + lastByte <= BUFSIZ * 10) {
-            errorBuffer.assign(errorBuffer.substr(bufferLen - lastByte, lastByte));
+            errorBuffer.assign(errorBuffer.substr(errorBufferLen - lastByte, lastByte));
         } else {
             //缓冲区占用内存太多，放弃缓冲区内容
             errorBuffer.clear();

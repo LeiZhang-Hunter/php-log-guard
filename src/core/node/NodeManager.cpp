@@ -126,6 +126,19 @@ void Node::NodeManager::run() {
 
     pidFile = configMap["sentry"]["pid_file"];
 
+    //最大的buffer长度
+    std::string maxBuffer = configMap["sentry_log_config"]["max_buffer"];
+    if (maxBuffer.empty()) {
+        std::cerr << "sentry_log_config[max_buffer] must not be empty" << std::endl;
+        exit(-1);
+    }
+
+    size_t maxBufferSize = static_cast<size_t>(atol(maxBuffer.c_str()));
+
+    if (maxBufferSize < 0) {
+        std::cerr << "sentry_log_config[max_buffer](" << maxBufferSize << ") error!" << std::endl;
+    }
+
     //存储路径
     std::vector<std::string> pathStorage;
     std::vector<std::map<std::string, std::function<void(const std::string&)>>> handle;
@@ -239,7 +252,8 @@ void Node::NodeManager::run() {
         }
 
         std::shared_ptr<App::FileEvent> fileNotifyEvent = std::make_shared<App::FileEvent>(pathStorage[num], watcher);
-
+        //设置读取最大的buffer
+        fileNotifyEvent->setMaxBufferSize(maxBufferSize);
         //设置文件发生变化的时候的通知事件
         watcher->setFileEvent(fileNotifyEvent);
         fileNotifyEvent->setOnReceiveApi(handle[num][OnReceive]);

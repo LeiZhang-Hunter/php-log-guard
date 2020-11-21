@@ -23,6 +23,10 @@ namespace App {
          */
         void onReceive(const std::string &);
 
+        /**
+         * 设置正则表达式规则
+         * @param regexRule
+         */
         void setRegEx(const std::string& regexRule) {
             rule = regexRule;
         }
@@ -32,10 +36,13 @@ namespace App {
          */
         void onClose(const std::string &message);
 
+        //缓冲区
         std::string errorBuffer;
 
+        //正则表达式规则
         std::string rule;
 
+        //通用工具
         std::unique_ptr<OS::UnixUtil> util;
     };
 }

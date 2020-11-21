@@ -36,6 +36,15 @@ bool App::FileEvent::openFile() {
     return monitorFileFd;
 }
 
+size_t App::FileEvent::getFileSize() {
+    struct stat file_stat;
+    int res = fstat(monitorFileFd, &file_stat);
+    if (res == -1) {
+        return 0;
+    } else {
+        return file_stat.st_size;
+    }
+}
 
 bool App::FileEvent::flushOffset() {
     struct stat file_stat;
@@ -50,23 +59,38 @@ bool App::FileEvent::flushOffset() {
     }
 }
 
+//冲刷进缓冲区,但是会检查最大的缓冲区大小，如果到达缓冲区大小才会刷新
 void App::FileEvent::onModify() {
+    size_t oldPosition = offset;
+    //刷新位置
+    size_t nowPosition = getFileSize();
+
+    //到达了缓冲区大小
+    if ((nowPosition - oldPosition) >= bufferSize) {
+        flush(oldPosition, nowPosition);
+        offset = nowPosition;
+    }
+}
+
+void App::FileEvent::flushNoMaxBuffer() {
+    size_t oldPosition = offset;
+    //刷新位置
+    flushOffset();
+    flush(oldPosition, offset);
+}
+
+
+
+void App::FileEvent::flush(size_t oldPosition, ssize_t currentPosition) {
     struct stat file_state;//文件状态的结构体
     ssize_t readSize;//当前读取的尺寸
     ssize_t readBytes;//当前读取的尺寸
-    ssize_t currentPosition;//要读取的偏移量
     ssize_t readSum; //要读取的总量
-    size_t oldPosition = offset;//旧的位置
 
-    //刷新位置
-    flushOffset();
-
-    if (offset == 0) {
+    if (currentPosition == 0) {
         return;
     }
 
-    //要开始读取的位置
-    currentPosition = offset;
 
     //如果说开始读取的位置比之前的,说明被人损坏过,忽略掉这次读取
     if (currentPosition <= oldPosition) {
@@ -120,7 +144,6 @@ void App::FileEvent::onModify() {
             }
         }
     }
-
 }
 
 void App::FileEvent::onCreate() {

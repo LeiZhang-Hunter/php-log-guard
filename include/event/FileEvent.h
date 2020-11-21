@@ -55,11 +55,22 @@ namespace App {
         void onAccess();
 
         /**
+         * 设置最大尺寸
+         * @param length
+         */
+        void setMaxBufferSize(size_t length) {
+            bufferSize = length;
+        }
+
+        /**
          * 设置文件发生变动时候通知的API
          */
         void setOnReceiveApi(const std::function<void(const std::string&)>& _modifyFunc) {
             modifyFunc = _modifyFunc;
         }
+
+        //不管缓冲区多大，直接刷新
+        void flushNoMaxBuffer();
 
         /**
          * 设置文件被删除，移动，改变属性时候触发的API，注意删除和移动只有在监控级别是文件的时候才会是OnAttr
@@ -89,6 +100,15 @@ namespace App {
          * @return
          */
         bool closeFile();
+        /**
+         * 冲刷进文件
+         */
+        void flush(size_t oldPosition, ssize_t currentPosition);
+        /**
+         * 获取进入文件大小
+         */
+        size_t getFileSize();
+
         //存储路径
         std::string filePath;
         //监控的文件id
@@ -110,6 +130,8 @@ namespace App {
          * 关闭时候触发的函数
          */
         std::function<void(const std::string&)> closeFunc;
+        //最大的buffer
+        size_t bufferSize = 0;
     };
 }
 #endif //PHPLOGGUARD_FILEEVENT_H
