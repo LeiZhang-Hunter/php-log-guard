@@ -21,7 +21,7 @@ namespace App {
         /**
          * 收到函数的时候触发的函数地址
          */
-        void onReceive(const std::string &);
+        void onReceive(const std::string&);
 
         /**
          * 设置正则表达式规则

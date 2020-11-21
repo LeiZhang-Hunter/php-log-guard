@@ -49,7 +49,12 @@ set(SOURCE_FILES
         include/os/UnixConditionMutex.h
         include/os/UnixAutoMutex.h
         include/os/UnixThreadProc.h
-        src/core/os/UnixThreadProc.cpp src/app/AtelFormat.cpp include/app/AtelFormat.h src/core/os/UnixUtil.cpp include/os/UnixUtil.h)
+        src/core/os/UnixThreadProc.cpp src/app/AtelFormat.cpp
+        include/app/AtelFormat.h
+        src/core/os/UnixUtil.cpp
+        include/os/UnixUtil.h
+        src/core/os/UnixTimer.cpp
+        include/os/UnixTimer.h)
 #加入主要文件
 add_executable(phpLogGuard ${SOURCE_FILES})
 #CFLAGS='-g -O0'
