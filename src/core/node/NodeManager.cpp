@@ -240,6 +240,19 @@ void Node::NodeManager::run() {
         std::cerr << "php_fpm_regex not empty" << std::endl;
         exit(-1);
     }
+
+    //检查超时时间
+    std::string intervalConfig = configMap["sentry_log_config"]["max_flush_time"];
+    if (intervalConfig.empty()) {
+        std::cerr << "sentry_log_config[max_flush_time]" << intervalConfig << " error!" << std::endl;
+        exit(-1);
+    }
+    int interval = atoi(intervalConfig.c_str());
+    if (interval <= 0) {
+        std::cerr << "sentry_log_config[max_flush_time]" << intervalConfig << " error!" << std::endl;
+        exit(-1);
+    }
+
     pathStorage.push_back(php_fpm_slow_path);
     std::shared_ptr<App::PHPFpmSlow> PHPFpmSlowHandle = std::make_shared<App::PHPFpmSlow>();
     PHPFpmSlowHandle->setRegEx(php_fpm_slow_regex);
@@ -301,7 +314,11 @@ void Node::NodeManager::run() {
         fileWatcherChannel = std::make_shared<Event::Channel>(threadPool[num]->getEventLoop(), watcher->getINotifyId());
         fileWatcherChannel->setOnReadCallable(std::bind(&OS::UnixInodeWatcher::watcherOnRead, watcher));
         fileWatcherChannel->enableReading();
+
         fileChannel[num] = fileWatcherChannel;
+
+        //设置定时器
+        fileNotifyEvent->setTimer(threadPool[num]->getEventLoop(), interval);
 
     }
 

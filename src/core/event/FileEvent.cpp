@@ -90,6 +90,8 @@ void App::FileEvent::onModify() {
 }
 
 void App::FileEvent::flushNoMaxBuffer() {
+    std::cout << "flush" << std::endl;
+    timer->confirm();
     size_t oldPosition = offset;
     //刷新位置
     flushOffset();
@@ -189,4 +191,14 @@ void App::FileEvent::onMove() {
 
 void App::FileEvent::onAccess() {
     std::cout << "onAccess" << std::endl;
+}
+
+void App::FileEvent::setTimer(Event::EventLoop* loop, int time) {
+    //设置超时函数
+    timer = std::make_shared<OS::UnixTimer>();
+    int timerFd = timer->createTimer();
+    timer->setInterval(time);
+    timerChannel = std::make_shared<Event::Channel>(loop, timerFd);
+    timerChannel->setOnReadCallable(std::bind(&App::FileEvent::flushNoMaxBuffer, this));
+    timerChannel->enableReading();
 }

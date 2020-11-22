@@ -14,6 +14,9 @@
 #include <vector>
 #include <functional>
 
+#include "os/UnixTimer.h"
+#include "event/Channel.h"
+
 namespace OS {
     class UnixInodeWatcher;
 }
@@ -53,6 +56,8 @@ namespace App {
          * access的时候触发的函数
          */
         void onAccess();
+
+        void setTimer(Event::EventLoop* loop, int time);
 
         /**
          * 设置最大尺寸
@@ -132,6 +137,10 @@ namespace App {
         std::function<void(const std::string&)> closeFunc;
         //最大的buffer
         size_t bufferSize = 0;
+        //用于定时的管道
+        std::shared_ptr<Event::Channel> timerChannel;
+        //定时器
+        std::shared_ptr<OS::UnixTimer> timer;
     };
 }
 #endif //PHPLOGGUARD_FILEEVENT_H
