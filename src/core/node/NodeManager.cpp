@@ -47,8 +47,15 @@ pid_t Node::NodeManager::getStorageMutexPid(const std::string &pidFilePath) {
         exit(-1);
     }
 
-
-    return 0;
+    //持久化pid进程文件锁
+    char buf[64];
+    size_t res = read(mutexFd, &buf, sizeof(buf));
+    if (res == -1) {
+        std::cerr << strerror(errno) << std::endl;
+        exit(-1);
+    }
+    pid_t  pid = atoi(buf);
+    return pid;
 }
 
 /**
@@ -76,11 +83,9 @@ pid_t Node::NodeManager::setStorageMutexPid(const std::string &pidFilePath) {
 
     pid_t managerPid = syscall(SYS_gettid);
 
-    char buf[sizeof(pid_t)+1];
+    char buf[sizeof(pid_t)+2];
 
     bzero(buf,sizeof(buf));
-
-    int r = lseek(mutexFd, 0, SEEK_SET);//清除文件内容
 
     lseek(mutexFd, 0, SEEK_SET);
     //清空文件内容
@@ -88,7 +93,6 @@ pid_t Node::NodeManager::setStorageMutexPid(const std::string &pidFilePath) {
 
     //重新写入pid
     snprintf(buf,sizeof(buf)+1,"%d\n", managerPid);
-
     res = write(mutexFd,buf,strlen(buf));
 
     if(res <= 0)
@@ -103,7 +107,32 @@ pid_t Node::NodeManager::setStorageMutexPid(const std::string &pidFilePath) {
  * 接收到SIGTERM的处理函数
  */
 void Node::NodeManager::onStop() {
-    mainLoop->stop();
+    struct signalfd_siginfo fdsi;
+    ssize_t size;
+
+    size = read(signalDescription->getSignalFd(), &fdsi, sizeof(struct signalfd_siginfo));
+
+    if (size == -1) {
+        std::cerr << signalDescription->getErrorMsg() << std::endl;
+        exit(-1);
+    }
+
+    if (size != sizeof(struct signalfd_siginfo)) {
+        std::cerr << "read signalfd error!" << std::endl;
+    }
+
+    if (fdsi.ssi_signo == SIGTERM) {
+
+        {
+            std::map<int, std::shared_ptr<OS::UnixThread>>::iterator threadIterator;
+            for(threadIterator = threadPool.begin(); threadIterator != threadPool.end(); threadIterator ++) {
+                threadIterator->second->Stop();
+                threadIterator->second->getEventLoop()->wakeup();
+                threadIterator->second.reset();
+            }
+        }
+        mainLoop->stop();
+    }
 }
 
 /**
@@ -226,6 +255,17 @@ void Node::NodeManager::run() {
     if (executorCmd == "stop") {
         //获取程序的pid
         pid_t pid = getStorageMutexPid(pidFile);
+        if (pid > 0) {
+            int res = kill(pid, SIGTERM);
+            if (res == -1) {
+                std::cerr << strerror(errno) << std::endl;
+                exit(-1);
+            }
+            exit(0);
+        } else {
+            std::cout << "pid(" << pid << ") error!" << std::endl;
+            exit(0);
+        }
     } else if (executorCmd == "help") {
 
     }
@@ -277,8 +317,8 @@ void Node::NodeManager::run() {
     signalChannel->setOnReadCallable(std::bind(&NodeManager::onStop, shared_from_this()));
     signalChannel->enableReading();
 
-    std::cout << "finish" << std::endl;
 
+    std::cout << "finish" << std::endl;
     //加入
     mainLoop->start();
 }

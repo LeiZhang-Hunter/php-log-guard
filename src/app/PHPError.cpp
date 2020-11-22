@@ -9,7 +9,6 @@ void App::PHPError::onReceive(const std::string &buffer) {
     std::smatch result;
     std::regex pattern(rule);	//匹配错误日志内容
     size_t bufferLen = buffer.length();
-    std::cout << bufferLen << std::endl;
     //拼接加入缓冲区
     errorBuffer.append(buffer);
     size_t errorBufferLen = errorBuffer.length();

@@ -17,14 +17,15 @@ namespace OS {
     class UnixSignalDescription : public Noncopyable{
     public:
         UnixSignalDescription() {
-
+            sigemptyset(&mask);
         }
 
         //添加信号到mask信号集
         bool addMask(int sigNo) {
             int res = sigaddset(&mask, sigNo);
-            if (res == 0)
+            if (res == 0) {
                 return true;
+            }
             return false;
         }
 
@@ -63,10 +64,11 @@ namespace OS {
          * @return
          */
         int getSignalFd() {
-            lockProcMask();
-            signalFd = signalfd(-1, &mask, SFD_NONBLOCK);
-            if (signalFd == -1) {
-                return false;
+            if (!signalFd) {
+                signalFd = signalfd(-1, &mask, SFD_NONBLOCK);
+                if (signalFd == -1) {
+                    return false;
+                }
             }
             return signalFd;
         }

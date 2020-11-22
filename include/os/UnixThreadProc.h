@@ -4,9 +4,9 @@
 
 #ifndef PHPLOGGUARD_UNIXTHREADPROC_H
 #define PHPLOGGUARD_UNIXTHREADPROC_H
-#include <stdint.h>
 #include "event/EventLoop.h"
 #include "os/UnixCountDownLatch.h"
+#include "os/UnixSignalDescription.h"
 namespace OS {
     class UnixThreadProc {
     public:
@@ -16,7 +16,10 @@ namespace OS {
          */
         UnixThreadProc(Event::EventLoop* loop_, std::shared_ptr<UnixCountDownLatch>& latch_) : latch(latch_) {
             loop = loop_;
+            signalDescription = std::make_shared<OS::UnixSignalDescription>();
         }
+
+        void onStop();
 
         //运行线程空间主程序
         void runThread();
@@ -32,6 +35,7 @@ namespace OS {
         std::shared_ptr<UnixCountDownLatch>& latch;
         //线程id
         pid_t threadTid;
+        std::shared_ptr<OS::UnixSignalDescription> signalDescription;;
     };
 }
 

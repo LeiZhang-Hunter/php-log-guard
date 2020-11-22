@@ -26,7 +26,6 @@ OS::UnixThread::~UnixThread() {
  * @return
  */
 void* OS::UnixThread::ThreadProc(void *arg) {
-    std::cout << syscall(SYS_gettid) << std::endl;
 
     //创建独立的线程运行空间
     OS::UnixThreadProc *proc = static_cast<OS::UnixThreadProc *>(arg);

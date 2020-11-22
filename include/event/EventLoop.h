@@ -21,9 +21,7 @@ namespace Event {
     typedef std::map<int, Channel*> ChannelMap;
     class EventLoop : public Noncopyable {
     public:
-        EventLoop() :eventList(16) {
-            eventPollFd = epoll_create1(EPOLL_CLOEXEC);
-        };
+        EventLoop();
 
         bool set(int operation, Channel* channel);
 
@@ -31,9 +29,16 @@ namespace Event {
             return quit = true;
         }
 
+        /**
+         * 被环形
+         */
+        void onWakeUp();
+
         bool start();
 
         bool updateChannel(Channel* channel);
+
+        bool wakeup();
 
         ~EventLoop() {
             ::close(eventPollFd);
@@ -44,6 +49,8 @@ namespace Event {
         bool quit = false;
         EventListType eventList;
         ChannelMap channels;
+        //创建用来wakeup的channel
+        std::shared_ptr<Event::Channel> wakeUpChannel;
     };
 }
 

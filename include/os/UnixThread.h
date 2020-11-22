@@ -18,6 +18,7 @@
 #include "event/EventLoop.h"
 #include "os/UnixThreadProc.h"
 #include "os/UnixCountDownLatch.h"
+#include "event/Channel.h"
 
 namespace OS {
     class UnixThread {
@@ -42,6 +43,7 @@ namespace OS {
         //停止线程
         void Stop() {
             mMutex.lock();
+            loop->stop();
             mTerminated = true;
             mMutex.unlock();
         }
