@@ -16,7 +16,6 @@ namespace OS {
     public:
         int createTimer() {
             timerFd = timerfd_create(CLOCK_MONOTONIC,  TFD_NONBLOCK | TFD_CLOEXEC);
-            std::cout << timerFd << std::endl;
             if (timerFd == -1) {
                 std::cerr << strerror(errno) << std::endl;
                 exit(-1);
