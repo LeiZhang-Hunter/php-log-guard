@@ -13,6 +13,7 @@
 
 #include "Noncopyable.h"
 #include "os/UnixUtil.h"
+#include "app/AtelFormat.h"
 
 namespace App {
     class PHPError : Noncopyable, std::enable_shared_from_this<PHPError> {
@@ -35,13 +36,24 @@ namespace App {
         }
 
         /**
+         * 转换为Atel的错误等级
+         * @param errorLevel
+         * @return
+         */
+        std::string covertAtelLevel(const std::string& errorLevel);
+
+        /**
+         * 设置输出文件的路径
+         * @param path
+         */
+        void setOutPath(const std::string& path) {
+            outPath = path;
+        }
+
+        /**
          * 文件被关闭的时候触发的函数
          */
         void onClose(const std::string &message);
-
-        void setMaxBuffer(size_t maxBufferSize) {
-            maxBufferSize = bufferSize;
-        }
 
         //缓冲区
         std::string errorBuffer;
@@ -52,7 +64,10 @@ namespace App {
         //通用工具
         std::unique_ptr<OS::UnixUtil> util;
 
+        //缓冲区大小
         size_t bufferSize;
+
+        std::string outPath;
     };
 }
 #endif //PHPLOGGUARD_PHPERROR_H

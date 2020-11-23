@@ -90,7 +90,6 @@ void App::FileEvent::onModify() {
 }
 
 void App::FileEvent::flushNoMaxBuffer() {
-    std::cout << "flush" << std::endl;
     timer->confirm();
     size_t oldPosition = offset;
     //刷新位置

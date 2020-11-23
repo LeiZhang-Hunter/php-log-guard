@@ -17,21 +17,32 @@ void App::PHPError::onReceive(const std::string &buffer) {
     std::string::const_iterator iterStart = errorBuffer.begin();
     std::string::const_iterator iterEnd = errorBuffer.end();
     std::string temp;
-    std::string atelLog;
+
+    //atel格式化处理程序
+    std::unique_ptr<App::AtelFormat> atel(new App::AtelFormat);
+
+    atel->setOutPut(outPath);
 
     while (regex_search(iterStart, iterEnd, result, pattern))
     {
-        atelLog.clear();
+        std::string atelLog;
         atelLog.append(util->formatPhpDateToJavaDate(result[1]));
         atelLog.append(" ");
         atelLog.append("php_errors");
         atelLog.append(" ");
-        atelLog.append(result[2]);
+        atelLog.append(covertAtelLevel(result[2]));
         atelLog.append(" ");
+        atelLog.append(result[2]);
+        atelLog.append(":");
         atelLog.append(result[3]);
+        atelLog.append("\n");
+        atel->append(atelLog);
         iterStart = result[0].second;	//更新搜索起始位置,搜索剩下的字符串
         continue;
     }
+
+    //刷新到缓冲区
+    atel->flush();
 
     //查看结尾有多少个字符串没有匹配到
     size_t lastByte = result.position();
@@ -50,6 +61,14 @@ void App::PHPError::onReceive(const std::string &buffer) {
     }
 
 
+}
+
+std::string App::PHPError::covertAtelLevel(const std::string& errorLevel) {
+    if (errorLevel == "PHP Fatal error" || errorLevel == "PHP Recoverable fatal error" || errorLevel == "PHP Parse error") {
+        return "ERROR";
+    } else {
+        return "WARN";
+    }
 }
 
 void App::PHPError::onClose(const std::string &message) {

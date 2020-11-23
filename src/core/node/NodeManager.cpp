@@ -172,6 +172,18 @@ void Node::NodeManager::run() {
     std::vector<std::string> pathStorage;
     std::vector<std::map<std::string, std::function<void(const std::string&)>>> handle;
 
+    //检查输出路径的合理性
+    std::string outPath = configMap["sentry_log_config"]["output-file"];
+    if (outPath.empty()) {
+        std::cerr << "sentry_log_config[output-file]" << outPath << " not empty!" << std::endl;
+        exit(-1);
+    }
+
+    if (access(outPath.c_str(), F_OK) == -1) {
+        std::cerr << "sentry_log_config[output-file]:" << outPath << " not exist!" << std::endl;
+        exit(-1);
+    }
+
     /**
      * php_error log 的监控配置注册
      */
@@ -191,6 +203,7 @@ void Node::NodeManager::run() {
     pathStorage.push_back(php_errors_path);
     //将处理函数加入回调的map中
     std::shared_ptr<App::PHPError> phpErrorHandle = std::make_shared<App::PHPError>();
+    phpErrorHandle->setOutPath(outPath);
     phpErrorHandle->setRegEx(php_errors_regex);
     std::map<std::string, std::function<void(const std::string&)>> phpErrorMap;
     phpErrorMap[OnReceive] = std::bind(&App::PHPError::onReceive, phpErrorHandle, _1);
@@ -252,6 +265,8 @@ void Node::NodeManager::run() {
         std::cerr << "sentry_log_config[max_flush_time]" << intervalConfig << " error!" << std::endl;
         exit(-1);
     }
+
+
 
     pathStorage.push_back(php_fpm_slow_path);
     std::shared_ptr<App::PHPFpmSlow> PHPFpmSlowHandle = std::make_shared<App::PHPFpmSlow>();
