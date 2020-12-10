@@ -9,7 +9,6 @@ App::FileEvent::FileEvent(const std::string &path, std::shared_ptr<OS::UnixInode
     filePath = path;
 
     if (!openFile()) {
-
         exit(-1);
     }
 
@@ -71,7 +70,7 @@ void App::FileEvent::onModify() {
     if ((nowPosition - oldPosition) >= bufferSize) {
         //每次刷新bufferSize 到缓冲区,不要把过大的内存输出进去
         lastBufferLen = nowPosition - oldPosition;
-        while (lastBufferLen){
+        while (lastBufferLen) {
             if (lastBufferLen >= bufferSize) {
                 readBufferSize = bufferSize;
             } else {
@@ -80,7 +79,7 @@ void App::FileEvent::onModify() {
 
             //冲刷进入磁盘
             flush(oldPosition, oldPosition + readBufferSize);
-            oldPosition +=  readBufferSize;
+            oldPosition += readBufferSize;
 
             lastBufferLen = nowPosition - (oldPosition);
         }
@@ -162,7 +161,6 @@ void App::FileEvent::flush(size_t oldPosition, ssize_t currentPosition) {
             }
         }
     }
-
     modifyFunc(tmpBuffer);
 
 }
@@ -192,7 +190,7 @@ void App::FileEvent::onAccess() {
     std::cout << "onAccess" << std::endl;
 }
 
-void App::FileEvent::setTimer(Event::EventLoop* loop, int time) {
+void App::FileEvent::setTimer(Event::EventLoop *loop, int time) {
     //设置超时函数
     timer = std::make_shared<OS::UnixTimer>();
     int timerFd = timer->createTimer();

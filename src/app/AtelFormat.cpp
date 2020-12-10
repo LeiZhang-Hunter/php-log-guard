@@ -9,12 +9,13 @@ App::AtelFormat::AtelFormat() {
 }
 
 void App::AtelFormat::append(std::string& buffer) {
+    if (buffer.empty()) {
+        return;
+    }
     atelBuffer.push_back(std::move(buffer));
 }
 
 void App::AtelFormat::flush() {
-    std::cout << atelBuffer.size() << std::endl;
-
     if (!atelBuffer.empty()) {
         std::ofstream fileOut;
         fileOut.open(outPath, std::ios::app|std::ios::out);
