@@ -38,11 +38,7 @@ set(SOURCE_FILES
         src/core/event/FileEvent.cpp
         include/event/FileEvent.h
         src/app/PHPError.cpp
-        src/app/PHPFpmSlow.cpp
-        src/app/PHPFpmError.cpp
         include/app/PHPError.h
-        include/app/PHPFpmError.h
-        include/app/PHPFpmSlow.h
         src/core/os/UnixCountDownLatch.cpp
         include/os/UnixCountDownLatch.h
         include/os/UnixMutex.h

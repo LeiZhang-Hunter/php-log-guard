@@ -41,7 +41,6 @@ void App::PHPError::onReceive(const std::string &buffer) {
 
             //解析慢日志
         }
-        std::cout << atelLog << std::endl;
 
         atel->append(atelLog);
         iterStart = result[0].second;	//更新搜索起始位置,搜索剩下的字符串

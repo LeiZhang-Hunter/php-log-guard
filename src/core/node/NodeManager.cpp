@@ -5,8 +5,6 @@
 #include "NodeManager.h"
 #include "event/EventLoop.h"
 #include "app/PHPError.h"
-#include "app/PHPFpmError.h"
-#include "app/PHPFpmSlow.h"
 
 
 /**
@@ -267,7 +265,6 @@ void Node::NodeManager::run() {
             }
             exit(0);
         } else {
-            std::cout << "pid(" << pid << ") error!" << std::endl;
             exit(0);
         }
     } else if (executorCmd == "help") {
@@ -284,7 +281,6 @@ void Node::NodeManager::run() {
     //将php-fpm php_errors.log 和 php-fpm-slow.log 分别 放到一个线程中做处理
     std::shared_ptr<Event::Channel> fileWatcherChannel;
     for (num = 0; num < pathStorage.size(); num++) {
-        std::cout << pathStorage[num]<< std::endl;
         //初始化线程运行，确保在加入监控之前线程已经运行
         threadPool[num] = std::make_shared<OS::UnixThread>();
         //运行线程
@@ -327,7 +323,6 @@ void Node::NodeManager::run() {
     signalChannel->enableReading();
 
 
-    std::cout << "finish" << std::endl;
     //加入
     mainLoop->start();
 }

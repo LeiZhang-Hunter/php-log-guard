@@ -166,15 +166,12 @@ void App::FileEvent::flush(size_t oldPosition, ssize_t currentPosition) {
 }
 
 void App::FileEvent::onCreate() {
-    std::cout << "onCreate" << std::endl;
 }
 
 void App::FileEvent::onDelete() {
-    std::cout << "onDelete" << std::endl;
 }
 
 void App::FileEvent::onAttrChange() {
-    std::cout << "onAttr" << std::endl;
     closeFile();
     openFile();
     closeFunc("close");
@@ -183,11 +180,9 @@ void App::FileEvent::onAttrChange() {
 }
 
 void App::FileEvent::onMove() {
-    std::cout << "onMove" << std::endl;
 }
 
 void App::FileEvent::onAccess() {
-    std::cout << "onAccess" << std::endl;
 }
 
 void App::FileEvent::setTimer(Event::EventLoop *loop, int time) {
