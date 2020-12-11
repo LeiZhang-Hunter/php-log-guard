@@ -17,7 +17,7 @@ void App::AtelFormat::append(std::string& buffer) {
 }
 
 void App::AtelFormat::flush() {
-    if (!atelBuffer.empty()) {
+    if (atelBuffer.empty()) {
         return;
     }
 

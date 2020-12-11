@@ -286,6 +286,7 @@ void Node::NodeManager::run() {
         //运行线程
         threadPool[num]->Start();
         //加入文件监控
+        std::cout << pathStorage[num] << std::endl;
         std::shared_ptr<OS::UnixInodeWatcher> watcher = std::make_shared<OS::UnixInodeWatcher>(pathStorage[num]);
         if (!watcher->enableWatcher()) {
             std::cerr << watcher->getErrorMsg() << std::endl;
