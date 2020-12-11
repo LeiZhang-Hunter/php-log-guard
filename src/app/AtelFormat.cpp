@@ -27,6 +27,7 @@ void App::AtelFormat::flush() {
     std::vector<std::string>::iterator atelIterator;
     if (!fileOut.is_open())
     {
+        std::cout << "error" << std::endl;
         return;
     }
 

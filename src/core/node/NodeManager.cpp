@@ -215,7 +215,7 @@ void Node::NodeManager::run() {
     }
 
     outPath = (outPath + appName);
-    res = mkdir(outPath.c_str(), S_IRUSR | S_IWUSR);
+    res = mkdir(outPath.c_str(), 0766);
     if (res == -1) {
         if (errno != EEXIST) {
             std::cerr << "mkdir(" << outPath << ")error:" << strerror(errno) << "!" << std::endl;
@@ -223,6 +223,7 @@ void Node::NodeManager::run() {
         }
     }
     outPath = (outPath + "/" + "monitor_console.log");
+    std::cout << outPath <<std::endl;
 
     /**
      * php_error log 的监控配置注册
