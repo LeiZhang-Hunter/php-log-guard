@@ -177,10 +177,52 @@ void Node::NodeManager::run() {
         exit(-1);
     }
 
+    //检查输出的合理性
     if (access(outPath.c_str(), F_OK) == -1) {
         std::cerr << "sentry_log_config[output-file]:" << outPath << " not exist!" << std::endl;
         exit(-1);
     }
+
+    //检查填写的是否是一个目录
+    struct stat fileStat;
+    int res = stat(outPath.c_str(), &fileStat);
+    if (res == -1) {
+        std::cerr << "sentry_log_config[output-file] fileStat error:" << outPath << "; error" << strerror(errno) << std::endl;
+        exit(-1);
+    }
+
+    //检查是否是一个目录
+    if (!S_ISDIR(fileStat.st_mode)) {
+        std::cerr << "sentry_log_config[output-file] fileStat error:" << outPath << " must be dir"  << std::endl;
+        exit(-1);
+    }
+
+    //获取应用的名字
+    char name[65];
+    res = gethostname(name, sizeof(name));
+    if (res == -1) {
+        std::cerr << "gethostname error:" << strerror(errno)  << std::endl;
+        exit(-1);
+    }
+
+    //一直向后截取到最后一个字符串
+    std::string appName(name);
+    size_t pos = appName.find("-prd");
+    appName = appName.substr(0, pos);
+    if (appName.empty()) {
+        std::cerr << "appName empty!" << std::endl;
+        exit(-1);
+    }
+
+    outPath = (outPath + appName);
+    res = mkdir(outPath.c_str(), S_IRUSR | S_IWUSR);
+    if (res == -1) {
+        if (errno != EEXIST) {
+            std::cerr << "mkdir(" << outPath << ")error:" << strerror(errno) << "!" << std::endl;
+            exit(-1);
+        }
+    }
+    outPath = (outPath + "/" + "monitor_console.log");
 
     /**
      * php_error log 的监控配置注册
