@@ -5,7 +5,7 @@
 
 Config::configMapType Config::IniConfig::readConfig(std::string &filename) {
     if (access(filename.c_str(), R_OK) == -1) {
-        std::cerr<<"log file"<<filename.c_str()<<" is not exist;file:"<<__FILE__<<";line:"<<__LINE__;
+        std::cerr<<"log file"<<filename.c_str()<<" is not exist;file:"<<__FILE__<<";line:"<<__LINE__ << std::endl;
         exit(-1);
     }
 

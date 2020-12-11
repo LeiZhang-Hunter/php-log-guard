@@ -1,6 +1,8 @@
-cmake_minimum_required(VERSION 3.5.1)
+cmake_minimum_required(VERSION 3.4.19)
 project(php-atel-agent)
 set(CMAKE_CXX_STANDARD 11)
+
+set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
 
 # Add -O0 to remove optimizations when using gcc
 IF (CMAKE_COMPILER_IS_GNUCC)
