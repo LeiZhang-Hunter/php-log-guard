@@ -6,6 +6,7 @@
 
 App::FileEvent::FileEvent(const std::string &path, std::shared_ptr<OS::UnixInodeWatcher> &_watcher) :
         watcher(_watcher) {
+
     filePath = path;
 
     if (!openFile()) {
@@ -66,26 +67,28 @@ void App::FileEvent::onModify() {
     size_t lastBufferLen = 0;
     size_t readBufferSize = 0;
 
+    if ((nowPosition - oldPosition) < bufferSize) {
+        return;
+    }
+
     //到达了缓冲区大小
-    if ((nowPosition - oldPosition) >= bufferSize) {
-        //每次刷新bufferSize 到缓冲区,不要把过大的内存输出进去
-        lastBufferLen = nowPosition - oldPosition;
-        while (lastBufferLen) {
-            if (lastBufferLen >= bufferSize) {
-                readBufferSize = bufferSize;
-            } else {
-                readBufferSize = lastBufferLen;
-            }
-
-            //冲刷进入磁盘
-            flush(oldPosition, oldPosition + readBufferSize);
-            oldPosition += readBufferSize;
-
-            lastBufferLen = nowPosition - (oldPosition);
+    //每次刷新bufferSize 到缓冲区,不要把过大的内存输出进去
+    lastBufferLen = nowPosition - oldPosition;
+    while (lastBufferLen) {
+        if (lastBufferLen >= bufferSize) {
+            readBufferSize = bufferSize;
+        } else {
+            readBufferSize = lastBufferLen;
         }
 
-        offset = nowPosition;
+        //冲刷进入磁盘
+        flush(oldPosition, oldPosition + readBufferSize);
+        oldPosition += readBufferSize;
+
+        lastBufferLen = nowPosition - (oldPosition);
     }
+
+    offset = nowPosition;
 }
 
 void App::FileEvent::flushNoMaxBuffer() {
