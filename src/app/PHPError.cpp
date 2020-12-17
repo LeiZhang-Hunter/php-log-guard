@@ -73,7 +73,7 @@ void App::PHPError::parsePHPFPMLog(std::string& atelLog, const std::smatch& resu
     atelLog.append(util->formatPhpDateToJavaDate(result[1]));
     atelLog.append(" ");
     //线程名字
-    atelLog.append("php_fpm_log");
+    atelLog.append("[php_fpm_log]");
     atelLog.append(" ");
     //日志级别
     atelLog.append(covertAtelLevel(result[2]));
@@ -87,7 +87,7 @@ void App::PHPError::parsePHPLog(std::string& atelLog, const std::smatch& result)
     atelLog.append(util->formatPhpDateToJavaDate(result[1]));
     atelLog.append(" ");
     //线程名字
-    atelLog.append("php_errors");
+    atelLog.append("[php_errors]");
     atelLog.append(" ");
     //日志级别
     atelLog.append(covertAtelLevel(result[2]));

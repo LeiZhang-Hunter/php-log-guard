@@ -135,13 +135,19 @@ void App::FileEvent::flush(size_t oldPosition, ssize_t currentPosition) {
             break;
         }
         readSize = pread(monitorFileFd, readBuffer, readBytes, oldPosition);
-        if (readSize <= 0) {
+
+        if (readSize == 0) {
+            break;
+        }
+
+        if (readSize < 0) {
             //读完了
             if (errno == EAGAIN) {
                 break;
             }
 
             if (errno == EINTR) {
+                errno = 0;
                 continue;
             }
 
