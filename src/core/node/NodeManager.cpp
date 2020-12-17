@@ -222,7 +222,7 @@ void Node::NodeManager::run() {
             exit(-1);
         }
     }
-    outPath = (outPath + "/" + "monitor_console.log");
+    outPath = (outPath + "/" + "app_console.log");
 
     /**
      * php_error log 的监控配置注册
