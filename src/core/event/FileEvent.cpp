@@ -67,6 +67,14 @@ void App::FileEvent::onModify() {
     size_t lastBufferLen = 0;
     size_t readBufferSize = 0;
 
+    if (!nowPosition) {
+        return;
+    }
+
+    if (nowPosition < oldPosition) {
+        return;
+    }
+
     if ((nowPosition - oldPosition) < bufferSize) {
         return;
     }
@@ -75,6 +83,7 @@ void App::FileEvent::onModify() {
     //每次刷新bufferSize 到缓冲区,不要把过大的内存输出进去
     lastBufferLen = nowPosition - oldPosition;
     while (lastBufferLen) {
+        printf("11\n");
         if (lastBufferLen >= bufferSize) {
             readBufferSize = bufferSize;
         } else {
