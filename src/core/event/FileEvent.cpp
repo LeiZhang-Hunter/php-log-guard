@@ -101,6 +101,11 @@ void App::FileEvent::onModify() {
 }
 
 void App::FileEvent::flushNoMaxBuffer() {
+    currentGcNumber++;
+    if (currentGcNumber == maxGcNumber) {
+        ::unlink(gcPath.c_str());
+        currentGcNumber = 0;
+    }
     timer->confirm();
     size_t oldPosition = offset;
     //刷新位置

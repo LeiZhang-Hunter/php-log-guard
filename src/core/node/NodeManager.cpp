@@ -284,14 +284,29 @@ void Node::NodeManager::run() {
     //检查超时时间
     std::string intervalConfig = configMap["sentry_log_config"]["max_flush_time"];
     if (intervalConfig.empty()) {
-        std::cerr << "sentry_log_config[max_flush_time]" << intervalConfig << " error!" << std::endl;
+        std::cerr << "sentry_log_config[max_flush_time]:" << intervalConfig << " error!" << std::endl;
         exit(-1);
     }
     int interval = atoi(intervalConfig.c_str());
     if (interval <= 0) {
-        std::cerr << "sentry_log_config[max_flush_time]" << intervalConfig << " error!" << std::endl;
+        std::cerr << "sentry_log_config[max_flush_time]:" << intervalConfig << " error!" << std::endl;
         exit(-1);
     }
+
+    //检测定时器最大回收次数
+    std::string maxGcNumberConfig = configMap["sentry_log_config"]["max_gc_number"];
+    if (maxGcNumberConfig.empty()) {
+        std::cerr << "sentry_log_config[max_gc_number]:" << maxGcNumberConfig << " error!" << std::endl;
+        exit(-1);
+    }
+
+    int maxGcNumber = atoi(configMap["sentry_log_config"]["max_gc_number"].c_str());
+
+    if (maxGcNumber <= 0) {
+        std::cerr << "sentry_log_config[max_gc_number] can't letter 0 error!" << std::endl;
+        exit(-1);
+    }
+
 
     /**
      * 命令行分析
@@ -341,6 +356,8 @@ void Node::NodeManager::run() {
         watcher->setFileEvent(fileNotifyEvent);
         fileNotifyEvent->setOnReceiveApi(handle[num][OnReceive]);
         fileNotifyEvent->setOnCloseApi(handle[num][OnClose]);
+        fileNotifyEvent->setGcFilePath(outPath);
+        fileNotifyEvent->setMaxGcNumber(maxGcNumber);
         fileWatcherChannel = std::make_shared<Event::Channel>(threadPool[num]->getEventLoop(), watcher->getINotifyId());
         fileWatcherChannel->setOnReadCallable(std::bind(&OS::UnixInodeWatcher::watcherOnRead, watcher));
         fileWatcherChannel->enableReading();
