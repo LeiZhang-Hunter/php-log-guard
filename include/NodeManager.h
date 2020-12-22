@@ -32,7 +32,7 @@ namespace Node {
         bool getConfigPath(int argc, char **argv, const char &cmd) {
             configPath = argv[optind];
             if (configPath.empty()) {
-                configPath = "/data/www/hupu.com/ugcaudit-phpatel-agent/config/config.ini";
+                    configPath = "/data/www-data/hupu.com/ugcaudit-phpatel-mdw/config/config.ini";
             }
             return true;
         }
