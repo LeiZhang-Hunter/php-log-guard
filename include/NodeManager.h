@@ -72,7 +72,7 @@ namespace Node {
         Lock::FilePersistenceLock persistLock;
         std::shared_ptr<OS::UnixSignalDescription> signalDescription;
         Event::EventLoop* mainLoop;
-        std::string configPath;
+        std::string configPath = "/data/www/hupu.com/ugcaudit-phpatel-mdw/config/config.ini";
         std::string pidFile;
         std::string executorCmd = "start";
         int mutexFd;
