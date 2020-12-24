@@ -31,9 +31,6 @@ namespace Node {
 
         bool getConfigPath(int argc, char **argv, const char &cmd) {
             configPath = argv[optind];
-            if (configPath.empty()) {
-                    configPath = "/data/www-data/hupu.com/ugcaudit-phpatel-mdw/config/config.ini";
-            }
             return true;
         }
 
@@ -72,7 +69,7 @@ namespace Node {
         Lock::FilePersistenceLock persistLock;
         std::shared_ptr<OS::UnixSignalDescription> signalDescription;
         Event::EventLoop* mainLoop;
-        std::string configPath = "/data/www/hupu.com/ugcaudit-phpatel-mdw/config/config.ini";
+        std::string configPath = "/data/www-data/hupu.com/ugcaudit-phpatel-mdw/config/config.ini";
         std::string pidFile;
         std::string executorCmd = "start";
         int mutexFd;
