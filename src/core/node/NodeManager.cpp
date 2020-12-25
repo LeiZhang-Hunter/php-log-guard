@@ -101,6 +101,62 @@ pid_t Node::NodeManager::setStorageMutexPid(const std::string &pidFilePath) {
     return managerPid;
 }
 
+int Node::NodeManager::createDaemon()
+{
+    pid_t pid = fork();
+
+    if(pid < 0)
+    {
+        std::cerr << "create daemon process error" << std::endl;
+        return  -1;
+    }else if(pid > 0)
+    {
+        //杀死掉父进程
+        exit(0);
+    }
+
+    //如果说设置进程组组长失败，
+    if(setsid() < 0)
+    {
+        std::cerr << "create process leader error" << std::endl;
+        return  -1;
+    }
+
+
+    //这里需要忽略掉信号
+    signal(SIGHUP,SIG_IGN);
+
+    pid = fork();
+
+    if(pid < 0)
+    {
+        return  -1;
+    }else if(pid)
+    {
+        exit(0);
+    }
+
+    chdir("/");
+
+    //改变描述符指向,没有做日志,为了方便起见，不做输入输出重定向了
+//    int i;
+//
+//    for(i=0;i<64;i++)
+//    {
+//        close(i);
+//    }
+
+
+    /*
+    open("/dev/null",O_RDONLY);
+    open("/dev/null",O_RDWR);
+    open("/dev/null",O_RDWR);
+     */
+
+    //运行run函数
+    return  0;
+}
+
 /**
  * 接收到SIGTERM的处理函数
  */
@@ -327,6 +383,18 @@ void Node::NodeManager::run() {
     } else if (executorCmd == "help") {
 
     }
+
+    //检查是否要启动守护进程
+    std::string daemonizeConfig = configMap["sentry_log_config"]["daemonize"];
+    if (daemonizeConfig.empty()) {
+        std::cerr << "daemonize error!" << std::endl;
+    }
+
+    int daemonize = atoi(daemonizeConfig.c_str());
+    if (daemonize != 0) {
+        createDaemon();
+    }
+
     //启动唯一进程副本
     setStorageMutexPid(pidFile);
 

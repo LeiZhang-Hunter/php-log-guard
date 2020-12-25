@@ -54,6 +54,9 @@ namespace Node {
 
         void onStop();
 
+        //创建守护进程
+        int createDaemon();
+
         ~NodeManager();
 
     private:
