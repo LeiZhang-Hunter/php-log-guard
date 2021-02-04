@@ -37,6 +37,10 @@ namespace OS {
             return cmdArgV;
         }
 
+        int getCmdArgC() {
+            return cmdArgC;
+        }
+
         bool parse();
 
     private:

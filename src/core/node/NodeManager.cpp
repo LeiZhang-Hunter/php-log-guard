@@ -43,11 +43,6 @@ bool Node::NodeManager::cmdExecutor(int argc, char **argv, const char &cmd) {
  */
 bool Node::NodeManager::reName(int argc, char **argv, const char &cmd) {
     processName = argv[optind];
-    if (!processName.empty()) {
-        std::shared_ptr<OS::UnixUtil> util = std::make_shared<OS::UnixUtil>();
-        util->setProcTitleInit(argc, argv, environ);
-        util->setProcTitle("%s", processName.c_str());
-    }
     return true;
 }
 
@@ -219,6 +214,13 @@ void Node::NodeManager::run() {
     if (configPath.empty() && command->getCmdArgv()[0]) {
         configPath = dirname(command->getCmdArgv()[0]);
         configPath += "/config/config.ini";
+    }
+
+    //检查进程名字是否存在，存在的话设置进程名字
+    if (!processName.empty()) {
+        std::shared_ptr<OS::UnixUtil> util = std::make_shared<OS::UnixUtil>();
+        util->setProcTitleInit(command->getCmdArgC(), command->getCmdArgv(), environ);
+        util->setProcTitle("%s", processName.c_str());
     }
 
     std::string iniConfigPath = getConfigPath();
