@@ -2,6 +2,7 @@
 // Created by zhanglei on 2020/11/10.
 //
 
+#include <libgen.h>
 #include "NodeManager.h"
 #include "event/EventLoop.h"
 #include "app/PHPError.h"
@@ -30,6 +31,23 @@ Node::NodeManager::NodeManager() {
  */
 bool Node::NodeManager::cmdExecutor(int argc, char **argv, const char &cmd) {
     executorCmd = argv[optind];
+    return true;
+}
+
+/**
+ * 获取用户输入的命令,设置进程名字
+ * @param argc
+ * @param argv
+ * @param cmd
+ * @return
+ */
+bool Node::NodeManager::reName(int argc, char **argv, const char &cmd) {
+    processName = argv[optind];
+    if (!processName.empty()) {
+        std::shared_ptr<OS::UnixUtil> util = std::make_shared<OS::UnixUtil>();
+        util->setProcTitleInit(argc, argv, environ);
+        util->setProcTitle("%s", processName.c_str());
+    }
     return true;
 }
 
@@ -80,18 +98,16 @@ pid_t Node::NodeManager::setStorageMutexPid(const std::string &pidFilePath) {
     }
 
     pid_t managerPid = syscall(SYS_gettid);
-
-    char buf[sizeof(pid_t)+2];
-
-    bzero(buf,sizeof(buf));
+    std::stringstream pidStr;
+    pidStr << managerPid;
+//    std::string buffer(static_cast<char*>(managerPid));
 
     lseek(mutexFd, 0, SEEK_SET);
     //清空文件内容
     ftruncate(mutexFd, 0);
 
     //重新写入pid
-    snprintf(buf,sizeof(buf)+1,"%d\n", managerPid);
-    res = write(mutexFd,buf,strlen(buf));
+    res = write(mutexFd, pidStr.str().c_str(), (pidStr.str().length()));
 
     if(res <= 0)
     {
@@ -194,12 +210,20 @@ void Node::NodeManager::onStop() {
  */
 void Node::NodeManager::run() {
     //注册命令行解析工具
-    command->reg('c', std::bind(&NodeManager::getConfigPath, shared_from_this(), _1, _2, _3));
+    command->reg('c', std::bind(&NodeManager::setConfigPath, shared_from_this(), _1, _2, _3));
     command->reg('e', std::bind(&NodeManager::cmdExecutor, shared_from_this(), _1, _2, _3));
+    command->reg('n', std::bind(&NodeManager::reName, shared_from_this(), _1, _2, _3));
     command->parse();
 
+    //没有配置默认从当前项目下config.ini去读取配置
+    if (configPath.empty() && command->getCmdArgv()[0]) {
+        configPath = dirname(command->getCmdArgv()[0]);
+        configPath += "/config/config.ini";
+    }
+
+    std::string iniConfigPath = getConfigPath();
     //解析ini的配置文件
-    Config::configMapType configMap = iniConfig->readConfig(configPath);
+    Config::configMapType configMap = iniConfig->readConfig(iniConfigPath);
 
     //校验pid文件路径是否正确
     if (configMap["sentry"]["pid_file"].empty()) {

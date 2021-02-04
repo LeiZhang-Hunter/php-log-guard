@@ -13,9 +13,9 @@
 
 namespace OS {
     class UnixCommand {
-        typedef std::function<bool (int argc, char **argv, const char &)> cmdClosureType;
-        typedef std::map< char, cmdClosureType> cmdMapType;
-        typedef std::map<const char, const std::string&> cmdResultMapType;
+        typedef std::function<bool(int argc, char **argv, const char &)> cmdClosureType;
+        typedef std::map<char, cmdClosureType> cmdMapType;
+        typedef std::map<const char, const std::string &> cmdResultMapType;
     public:
         void setCmdArgC(int argc) {
             cmdArgC = argc;
@@ -31,6 +31,10 @@ namespace OS {
          */
         void reg(const char &cmd, const cmdClosureType &closure) {
             cmdMap[cmd] = closure;
+        }
+
+        char **getCmdArgv() {
+            return cmdArgV;
         }
 
         bool parse();

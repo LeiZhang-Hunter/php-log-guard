@@ -2,8 +2,14 @@
 // Created by zhanglei on 19-8-9.
 //
 //#include "include/CThread.h"
-#include "getopt.h"
+
+#include <limits.h>
+#include <getopt.h>
+#include <libgen.h>
+
+
 #include <iostream>
+
 #include "NodeManager.h"
 #define DEFAULT_PATH "/etc/php-log-guard.ini"
 

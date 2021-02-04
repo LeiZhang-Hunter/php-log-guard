@@ -5,6 +5,8 @@
 #include <sstream>
 #include "os/UnixUtil.h"
 
+extern char **environ;
+
 int OS::UnixUtil::strToTime(const std::string& timeString) {
     std::stringstream stream(timeString);
     std::string headTimeString;
@@ -176,4 +178,58 @@ std::string OS::UnixUtil::formatPhpDateToJavaDate(const std::string& timeString)
              unixTime.tm_year, unixTime.tm_mon, unixTime.tm_mday,
              unixTime.tm_hour, unixTime.tm_min, unixTime.tm_sec);
     return buf;
+}
+
+void OS::UnixUtil::setProcTitleInit(int argc, char **argv, char **envp)
+{
+    int i;
+
+    for (i = 0; envp[i] != NULL; i++) // calc envp num
+        continue;
+    environ = (char **) malloc(sizeof (char *) * (i + 1)); // malloc envp pointer
+
+    for (i = 0; envp[i] != NULL; i++)
+    {
+        environ[i] = (char*)malloc(sizeof(char) * strlen(envp[i]));
+        strcpy(environ[i], envp[i]);
+    }
+    environ[i] = NULL;
+
+    g_main_Argv = argv;
+    if (i > 0)
+        g_main_LastArgv = envp[i - 1] + strlen(envp[i - 1]);
+    else
+        g_main_LastArgv = argv[argc - 1] + strlen(argv[argc - 1]);
+}
+
+void OS::UnixUtil::setProcTitle(const char *fmt, ...)
+{
+    char *p;
+    int i;
+    char buf[MAXLINE];
+
+    va_list ap;
+    p = buf;
+
+    va_start(ap, fmt);
+    vsprintf(p, fmt, ap);
+    va_end(ap);
+
+    i = strlen(buf);
+
+    if (i > g_main_LastArgv - g_main_Argv[0] - 2)
+    {
+        i = g_main_LastArgv - g_main_Argv[0] - 2;
+        buf[i] = '\0';
+    }
+    //修改argv[0]
+    (void) strcpy(g_main_Argv[0], buf);
+
+    p = &g_main_Argv[0][i];
+    while (p < g_main_LastArgv)
+        *p++ = '\0';
+    g_main_Argv[1] = NULL;
+
+    //调用prctl
+    prctl(PR_SET_NAME,buf);
 }

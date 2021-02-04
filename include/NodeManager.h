@@ -6,8 +6,10 @@
 #define LOGSENTRY_NODEMANAGER_H
 
 #include <syscall.h>
+#include <sys/prctl.h>
 
 #include <memory>
+#include <sstream>
 
 #include "os/UnixCommand.h"
 #include "config/IniConfig.h"
@@ -22,19 +24,29 @@ using namespace std::placeholders;
 
 #define OnReceive "OnReceive"
 #define OnClose "OnClose"
+extern char **environ;
 
 namespace Node {
-
     class NodeManager : public std::enable_shared_from_this<NodeManager>, Noncopyable {
     public:
         NodeManager();
 
-        bool getConfigPath(int argc, char **argv, const char &cmd) {
+        std::string& getConfigPath() {
+            if (configPath.empty()) {
+                std::cout << "configPath" << std::endl;
+            }
+            return configPath;
+        }
+
+        bool setConfigPath(int argc, char **argv, const char &cmd) {
             configPath = argv[optind];
             return true;
         }
 
         bool cmdExecutor(int argc, char **argv, const char &cmd);
+
+        //进程名字重命名
+        bool reName(int argc, char **argv, const char &cmd);
 
         bool setCommandArgc(int argc) {
             command->setCmdArgC(argc);
@@ -72,9 +84,10 @@ namespace Node {
         Lock::FilePersistenceLock persistLock;
         std::shared_ptr<OS::UnixSignalDescription> signalDescription;
         Event::EventLoop* mainLoop;
-        std::string configPath = "/data/www-data/hupu.com/ugcaudit-phpatel-mdw/config/config.ini";
+        std::string configPath;
         std::string pidFile;
         std::string executorCmd = "start";
+        std::string processName;
         int mutexFd;
         //线程池
         std::map<int, std::shared_ptr<OS::UnixThread>> threadPool;

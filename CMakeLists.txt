@@ -2,12 +2,14 @@ cmake_minimum_required(VERSION 3.4.19)
 project(php-atel-agent)
 set(CMAKE_CXX_STANDARD 11)
 
+SET(CMAKE_BUILD_TYPE "Release")
+
 set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
 
 # Add -O0 to remove optimizations when using gcc
 IF (CMAKE_COMPILER_IS_GNUCC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -pthread")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -pthread")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
 ENDIF (CMAKE_COMPILER_IS_GNUCC)
 
 #引入头文件
