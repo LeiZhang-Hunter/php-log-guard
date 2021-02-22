@@ -75,7 +75,7 @@ pid_t Node::NodeManager::getStorageMutexPid(const std::string &pidFilePath) {
  * @return
  */
 pid_t Node::NodeManager::setStorageMutexPid(const std::string &pidFilePath) {
-    mutexFd = open(pidFilePath.c_str(), O_CREAT | O_RDWR, __S_IREAD|__S_IWRITE);
+    mutexFd = open(pidFilePath.c_str(), O_CREAT | O_RDWR, 0664);
     if (mutexFd == -1) {
         std::cerr << "pid file(" << pidFilePath << ") " << strerror(errno) << "\n" << std::endl;
         exit(-1);
@@ -281,7 +281,7 @@ void Node::NodeManager::run() {
 
     //获取应用的名字
     char name[65];
-    char* char_app_name;
+    char* char_app_name = nullptr;
     std::string appName(name);
     char_app_name = getenv("APP_NAME");
     //首先去环境变量里面找，找不到再去hostname里面去找
@@ -298,6 +298,7 @@ void Node::NodeManager::run() {
             exit(-1);
         }
 
+        appName = name;
         //一直向后截取到最后一个字符串
         size_t pos = appName.find("-prd");
         appName = appName.substr(0, pos);
@@ -310,6 +311,7 @@ void Node::NodeManager::run() {
 
 
     outPath = (outPath + appName);
+    std::cout << outPath << std::endl;
     res = mkdir(outPath.c_str(), 0766);
     if (res == -1) {
         if (errno != EEXIST) {
@@ -318,7 +320,7 @@ void Node::NodeManager::run() {
         }
     }
     outPath = (outPath + "/" + "app_console.log");
-
+    std::cout << outPath << std::endl;
     /**
      * php_error log 的监控配置注册
      */
@@ -334,6 +336,7 @@ void Node::NodeManager::run() {
         std::cerr << "php_errors_regex not empty" << std::endl;
         exit(-1);
     }
+
     //存储要监控的文件路径
     pathStorage.push_back(php_errors_path);
     //将处理函数加入回调的map中

@@ -25,7 +25,7 @@ bool App::FileEvent::closeFile() {
 }
 
 bool App::FileEvent::openFile() {
-    monitorFileFd = open(filePath.c_str(), O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+    monitorFileFd = open(filePath.c_str(), O_CREAT | O_RDWR, 0664);
 
     if (monitorFileFd == -1) {
         std::cerr << filePath.c_str() << ";error:" << strerror(errno) << std::endl;

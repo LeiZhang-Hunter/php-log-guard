@@ -14,6 +14,7 @@
 #include <memory>
 #include "event/FileEvent.h"
 #include "Noncopyable.h"
+#include "os/UnixUtil.h"
 
 namespace OS {
     class UnixInodeWatcher : public Noncopyable {

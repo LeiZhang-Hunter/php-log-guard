@@ -5,6 +5,17 @@
 #include "os/UnixInodeWatcher.h"
 
 bool OS::UnixInodeWatcher::enableWatcher() {
+
+    //检查文件是否存在，文件不存在的话创建文件
+    OS::UnixUtil util;
+    //检查文件是否合理
+    if (access(watcherPath.c_str(), F_OK) == -1) {
+        //创建文件
+        int fd = open(watcherPath.c_str(), O_CREAT, 0664);
+        if (fd > 0) {
+            close(fd);
+        }
+    }
     watcherFd = inotify_add_watch(iNotifyId, watcherPath.c_str(), IN_ATTRIB |IN_MODIFY  |IN_CREATE |IN_DELETE |IN_MOVE_SELF);
     if (watcherFd == -1) {
         std::cerr << getErrorMsg() << std::endl;
