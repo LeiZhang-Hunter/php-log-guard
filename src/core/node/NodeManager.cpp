@@ -281,20 +281,33 @@ void Node::NodeManager::run() {
 
     //获取应用的名字
     char name[65];
-    res = gethostname(name, sizeof(name));
-    if (res == -1) {
-        std::cerr << "gethostname error:" << strerror(errno)  << std::endl;
-        exit(-1);
+    char* char_app_name;
+    std::string appName(name);
+    char_app_name = getenv("APP_NAME");
+    //首先去环境变量里面找，找不到再去hostname里面去找
+    if (char_app_name) {
+        appName = char_app_name;
+        if (appName.empty()) {
+            std::cerr << "appName empty!" << std::endl;
+            exit(-1);
+        }
+    } else {
+        res = gethostname(name, sizeof(name));
+        if (res == -1) {
+            std::cerr << "gethostname error:" << strerror(errno)  << std::endl;
+            exit(-1);
+        }
+
+        //一直向后截取到最后一个字符串
+        size_t pos = appName.find("-prd");
+        appName = appName.substr(0, pos);
+        if (appName.empty()) {
+            std::cerr << "appName empty!" << std::endl;
+            exit(-1);
+        }
     }
 
-    //一直向后截取到最后一个字符串
-    std::string appName(name);
-    size_t pos = appName.find("-prd");
-    appName = appName.substr(0, pos);
-    if (appName.empty()) {
-        std::cerr << "appName empty!" << std::endl;
-        exit(-1);
-    }
+
 
     outPath = (outPath + appName);
     res = mkdir(outPath.c_str(), 0766);
