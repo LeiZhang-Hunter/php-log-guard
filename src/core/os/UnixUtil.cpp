@@ -83,15 +83,15 @@ int OS::UnixUtil::getMonth(const std::string& month) {
         return 4;
     }
 
-    if (month == "Jun") {
+    if (month == "May") {
         return 5;
     }
 
-    if (month == "Jul") {
+    if (month == "Jun") {
         return 6;
     }
 
-    if (month == "May") {
+    if (month == "Jul") {
         return 7;
     }
 

@@ -20,5 +20,9 @@ void OS::UnixTimer::setInterval(int time) {
 
 void OS::UnixTimer::confirm() {
     uint64_t exp;
-    read(timerFd, &exp, sizeof(uint64_t));
+    size_t size = read(timerFd, &exp, sizeof(uint64_t));
+    if (size == -1) {
+        std::cerr << strerror(errno) << std::endl;
+    }
+    return;
 }
